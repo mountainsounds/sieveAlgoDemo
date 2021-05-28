@@ -1,0 +1,333 @@
+/* Basic styling */
+/* #region */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+body {
+  font-family: sans-serif;
+  font-size: 16px;
+}
+nav {
+  background: #0a1931;
+  padding: 0 15px;
+}
+a {
+  color: white;
+  text-decoration: none;
+}
+.menu,
+.submenu {
+  list-style-type: none;
+}
+.logo {
+  font-size: 20px;
+  padding: 7.5px 10px 7.5px 0;
+}
+.item {
+  padding: 10px;
+}
+.item.button {
+  padding: 9px 5px;
+}
+.item:not(.button) a:hover,
+.item a:hover::after {
+  color: #ccc;
+}
+/* #endregion */
+/******* Body **************/
+
+/****** Demonstration Main Section Wrapper *********/
+
+/* User Interface Section */
+#userInterface {
+  display: grid;
+  place-items: center;
+  height: 250px;
+  background: #185adb;
+}
+/* Controller buttons */
+
+.form {
+  z-index: 1;
+  background: #FFFFFF;
+  max-width: 250px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+.form input {
+  outline: 0;
+  background: #f2f2f2;
+  width: 100%;
+  border: 0;
+  margin: 0 0 15px;
+  padding: 15px;
+  font-size: 13px;
+}
+
+#demoBtn {
+  font-family: "Roboto", sans-serif;
+  text-transform: uppercase;
+  outline: 0;
+  background: #4CAF50;
+  width: 100%;
+  border: 0;
+  padding: 15px;
+  margin-bottom: 10px;
+  color: #FFFFFF;
+  font-size: 14px;
+  -webkit-transition: all 0.3 ease;
+  transition: all 0.3 ease;
+  cursor: pointer;
+}
+
+#demoBtn:hover,.form button:active,.form button:focus {
+  background: #43A047;
+}
+
+
+/* Demo Rendering Section */
+#demoRender {
+  min-height: 70vh;
+  background: #185adb;
+  display: grid;
+  grid-template-columns: 50% 50%;
+}
+
+/* Code Model */
+#codeModel {
+  width: 50vw;
+  background: #185adb;
+  padding: 10px;
+}
+
+#codeContainer {
+  border-radius: 10px;
+  padding: 10px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* visual Model */
+#visualModel {
+  width: 50vw;
+  background: #185adb;
+  padding: 20px;
+}
+
+.countDiv {
+  display: inline-block;
+  padding: 0.3em 1.2em;
+  margin: 0 0.3em 0.3em 0;
+  border-radius: 2em;
+  box-sizing: border-box;
+  text-decoration: none;
+  font-family: 'Roboto',sans-serif;
+  font-weight: 300;
+  color: #FFFFFF;
+  background-color: #4eb5f1;
+  text-align: center;
+}
+
+.square {
+  width: 40px;
+  height: 40px;
+  background: #2ECC40;
+  border-radius: 5px;
+  margin: 2px;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 40px;
+}
+
+.squareFalsey {
+  opacity: 30%;
+}
+
+.highlight {
+  transform: scale(1.1);
+  background:#01FF70 ;
+}
+
+
+
+/****** Counter Application Section *********/
+#counterApplication {
+  height: 300px;
+  background: #ffc947;
+}
+
+
+/*************** Mobile menu ******************/
+/* #region */
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+.menu li a {
+  display: block;
+  padding: 15px 5px;
+}
+.menu li.subitem a {
+  padding: 15px;
+}
+.toggle {
+  order: 1;
+  font-size: 20px;
+
+}
+
+
+.item.button {
+  order: 2;
+}
+.item {
+  order: 3;
+  width: 100%;
+  text-align: center;
+  display: none;
+}
+.active .item {
+  display: block;
+}
+.button.secondary {
+  /* divider between buttons and menu links */
+  border-bottom: 1px #444 solid;
+}
+/* Submenu up from mobile screens */
+.submenu {
+  display: none;
+}
+.submenu-active .submenu {
+  display: block;
+}
+.has-submenu i {
+  font-size: 12px;
+}
+.has-submenu > a::after {
+  font-family: "Font Awesome 5 Free";
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 900;
+  content: "\f078";
+  color: white;
+  padding-left: 5px;
+}
+.subitem a {
+  padding: 10px 15px;
+}
+.submenu-active {
+  background-color: #111;
+  border-radius: 3px;
+}
+/* #endregion */
+
+
+/* Media Queries */
+/* remove columns on small screens */
+@media all and (max-width: 700px) {
+/* Demo Rendering Section */
+#demoRender {
+  min-height: 70vh;
+  background: #185adb;
+  display: inline-block;
+}
+
+/* Code Model */
+#codeModel {
+  width: 100vw;
+  background: #185adb;
+  padding: 10px;
+}
+
+/* visual Model */
+#visualModel {
+  width: 100vw;
+  background: #185adb;
+  padding: 20px;
+}
+
+}
+
+
+/* Tablet menu */
+@media all and (min-width: 700px) {
+  .menu {
+    justify-content: center;
+  }
+  .logo {
+    flex: 1;
+  }
+  .item.button {
+    width: auto;
+    order: 1;
+    display: block;
+  }
+  .toggle {
+    flex: 1;
+    text-align: right;
+    order: 2;
+  }
+  /* Button up from tablet screen */
+  .menu li.button a {
+    padding: 10px 15px;
+    margin: 5px 0;
+  }
+  .button a {
+    background: #0080ff;
+    border: 1px royalblue solid;
+  }
+  .button.secondary {
+    border: 0;
+  }
+  .button.secondary a {
+    background: transparent;
+    border: 1px #0080ff solid;
+  }
+  .button a:hover {
+    text-decoration: none;
+  }
+  .button:not(.secondary) a:hover {
+    background: royalblue;
+    border-color: darkblue;
+  }
+}
+/* Desktop menu */
+@media all and (min-width: 960px) {
+  .menu {
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    background: none;
+  }
+  .logo {
+    order: 0;
+  }
+  .item {
+    order: 1;
+    position: relative;
+    display: block;
+    width: auto;
+  }
+  .button {
+    order: 2;
+  }
+  .submenu-active .submenu {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 68px;
+    background: #111;
+  }
+  .toggle {
+    display: none;
+  }
+  .submenu-active {
+    border-radius: 0;
+  }
+}

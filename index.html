@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+  <link href="libraries/prism-night-owl.css" rel="stylesheet" />
+
+  <title>Sieve of Erosthenes</title>
+</head>
+<body>
+
+  <nav>
+    <ul class="menu">
+        <li class="logo"><a href="#">Sieve of Erosthenes</a></li>
+        <li class="item"><a target="_blank" href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes">Wikipedia</a></li>
+        <li class="item has-submenu"><a href="#">Time Complexity</a>
+          <ul class="submenu">
+            <li class="subitem"><a target="_blank" href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes#Algorithmic_complexity">O(√nloglogn)</a></li>
+            <li class="subitem"><a  target="_blank" href="http://www.cs.umd.edu/~gasarch/BLOGPAPERS/sump.pdf">Mathematical proof</a></li>
+
+        </ul></li>
+        <li class="item has-submenu ">
+            <a tabindex="0">Toy Problems</a>
+            <ul class="submenu">
+                <li class="subitem"><a  target="_blank" href="https://www.codewars.com/kata/577ade22311a24f0b70004a3">Codewars: Sieve</a></li>
+                <li class="subitem"><a target="_blank" href="https://leetcode.com/problems/count-primes/">LC: Count Primes</a></li>
+            </ul>
+        </li>
+        <li class="toggle"><a href="#"><i class="fas fa-bars"></i></a></li>
+    </ul>
+</nav>
+
+  <main id="demonstration">
+    <section id="userInterface">
+        <div class="form">
+          <form class="login-form">
+            <input required id='numInput' type="number" placeholder="Enter a number" min="2" max="100"/>
+            <button id="demoBtn"> Initiate </button>
+          </form>
+        </div>
+    </section>
+
+    <section id="demoRender">
+      <div id="codeModel">
+        <pre id="codeContainer" class=" language-javascript" tabindex="0"><code>
+          const countPrimes = (n) => {
+
+          }
+        </code></pre>
+      </div>
+      <div id="visualModel">
+        <div id="counter"></div>
+        <div id="squareWrapper"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="libraries/prism.js"></script>
+  <script src="libraries/prism-normalize-whitespace.js"></script>
+  <script src="scripts/modules/demo_codes.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>
