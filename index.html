@@ -3,72 +3,108 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Interactive visualization of the Sieve of Eratosthenes." />
-    <meta name="theme-color" content="#012b2d" />
-    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap"
-      rel="stylesheet"
+    <script>
+      // Set the theme before first paint. Kept inline so there is no flash.
+      (function () {
+        var theme = null;
+        try {
+          theme = localStorage.getItem('algo-theme');
+        } catch (e) {
+          /* storage unavailable */
+        }
+        if (theme !== 'signal' && theme !== 'notebook') {
+          theme =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'notebook'
+              : 'signal';
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <meta
+      name="description"
+      content="Animated algorithm walkthroughs. 01: Sieve of Eratosthenes."
     />
-    <title>Sieve of Eratosthenes</title>
+    <meta name="theme-color" content="#0a0c10" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>Sieve of Eratosthenes · algo.</title>
   </head>
   <body>
-    <header class="site-header">
-      <div class="title-block">
-        <p class="eyebrow">Algorithm visualization</p>
-        <h1>Sieve of Eratosthenes</h1>
-        <p class="summary">
-          Counts the primes below n by striking out the multiples of each prime.
-        </p>
+    <header class="top-bar">
+      <a class="wordmark" href="./">algo<span class="wordmark-dot">.</span></a>
+      <div class="top-actions">
+        <label class="visually-hidden" for="algoPicker">Algorithm</label>
+        <select id="algoPicker" class="algo-picker">
+          <option value="sieve-of-eratosthenes">01 · Sieve of Eratosthenes</option>
+        </select>
+        <fieldset class="theme-switch">
+          <legend class="visually-hidden">Theme</legend>
+          <label class="switch-opt">
+            <input type="radio" name="theme" value="signal" />
+            <span>Signal</span>
+          </label>
+          <label class="switch-opt">
+            <input type="radio" name="theme" value="notebook" />
+            <span>Notebook</span>
+          </label>
+        </fieldset>
       </div>
-      <nav class="header-links" aria-label="References">
-        <a
-          href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes"
-          target="_blank"
-          rel="noreferrer"
-          >Wikipedia</a
-        >
-        <a
-          href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes#Algorithmic_complexity"
-          target="_blank"
-          rel="noreferrer"
-          >O(n log log n)</a
-        >
-        <a href="https://leetcode.com/problems/count-primes/" target="_blank" rel="noreferrer"
-          >LeetCode 204</a
-        >
-      </nav>
     </header>
 
-    <main class="layout">
-      <section class="code-pane" aria-label="Code">
-        <div class="panel code-panel">
-          <p class="panel-label" id="codeLabel">countPrimes.js</p>
-          <pre class="code-pre"><code id="codeBlock"></code></pre>
-        </div>
+    <main class="page">
+      <section class="algo-head">
+        <p class="eyebrow" id="algoIndex">algorithm 01</p>
+        <h1 id="algoTitle">Sieve of Eratosthenes</h1>
+        <p class="summary" id="algoSummary">
+          Counts the primes below n by striking out the multiples of each prime.
+        </p>
+        <nav class="refs" aria-label="References">
+          <a
+            href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes"
+            target="_blank"
+            rel="noreferrer"
+            >Wikipedia</a
+          >
+          <a
+            href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes#Algorithmic_complexity"
+            target="_blank"
+            rel="noreferrer"
+            >O(n log log n)</a
+          >
+          <a href="https://leetcode.com/problems/count-primes/" target="_blank" rel="noreferrer"
+            >LeetCode 204</a
+          >
+        </nav>
       </section>
 
-      <section class="viz-pane" aria-label="Visualization">
-        <form class="panel controls" id="controls">
-          <div class="field">
-            <label class="panel-label" for="numInput">n (2–120)</label>
-            <input
-              id="numInput"
-              name="n"
-              type="number"
-              inputmode="numeric"
-              min="2"
-              max="120"
-              step="1"
-              value="30"
-            />
+      <div class="layout">
+        <section class="code-pane" aria-label="Code">
+          <div class="panel code-panel">
+            <p class="panel-label" id="codeLabel">countPrimes.js</p>
+            <pre class="code-pre"><code id="codeBlock"></code></pre>
           </div>
-          <div class="buttons">
-            <button type="submit" id="runBtn" class="btn primary">Run</button>
-            <button type="button" id="stepBtn" class="btn">Step</button>
-            <button type="button" id="resetBtn" class="btn">Reset</button>
+        </section>
+
+        <section class="viz-pane" aria-label="Visualization">
+          <form class="panel controls" id="controls">
+            <div class="field">
+              <label class="panel-label" for="numInput">n (2–120)</label>
+              <input
+                id="numInput"
+                name="n"
+                type="number"
+                inputmode="numeric"
+                min="2"
+                max="120"
+                step="1"
+                value="30"
+              />
+            </div>
+            <div class="buttons">
+              <button type="submit" id="runBtn" class="btn primary">Run</button>
+              <button type="button" id="stepBtn" class="btn">Step</button>
+              <button type="button" id="resetBtn" class="btn">Reset</button>
+            </div>
             <label class="speed">
               <span class="panel-label">Speed</span>
               <select id="speedSelect">
@@ -78,13 +114,17 @@
                 <option value="4">4×</option>
               </select>
             </label>
-          </div>
-          <p class="status" id="status" role="status" aria-live="polite">Pick n and press Run.</p>
-        </form>
+          </form>
 
-        <div id="grid" class="grid" aria-hidden="true"></div>
-        <p class="count-line"><span id="countChip" class="count-chip" hidden></span></p>
-      </section>
+          <div id="grid" class="grid" aria-hidden="true"></div>
+
+          <div class="readout">
+            <p class="status" id="status" role="status" aria-live="polite">Pick n and press Run.</p>
+            <!-- Repeats what the status line announces; hidden from AT. -->
+            <span id="countChip" class="count-chip" aria-hidden="true" hidden></span>
+          </div>
+        </section>
+      </div>
     </main>
 
     <footer class="site-footer">

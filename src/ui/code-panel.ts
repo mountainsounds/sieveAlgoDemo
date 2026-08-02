@@ -24,11 +24,13 @@ export class CodePanel {
         ? escapeHtml(listing.code)
         : Prism.highlight(listing.code, grammar, listing.language);
     // Tokens in these listings never span lines, so the highlighted markup
-    // can be split per line and each line wrapped for the marker.
+    // can be split per line and each line wrapped for the marker. The wrappers
+    // are blocks, so no newlines between them — inside a <pre> they'd render
+    // as extra empty lines.
     this.codeEl.innerHTML = html
       .split('\n')
       .map((line) => `<span class="code-line">${line === '' ? ' ' : line}</span>`)
-      .join('\n');
+      .join('');
     this.lines = Array.from(this.codeEl.querySelectorAll('.code-line'));
     this.active = null;
   }

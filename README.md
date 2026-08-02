@@ -1,7 +1,11 @@
-# Sieve of Eratosthenes
+# algo.
 
-Interactive visualization of the Sieve of Eratosthenes: pick n, watch the
-multiples get struck out, and follow along in the code panel line by line.
+Animated algorithm walkthroughs. Each algorithm gets an animated grid, a
+plain-language narration line, and a code panel that follows the executing
+line. First up: the Sieve of Eratosthenes.
+
+Two themes, switchable in the header: Signal (dark) and Notebook (light
+graph paper).
 
 Live: https://mountainsounds.github.io/sieveAlgoDemo/
 
