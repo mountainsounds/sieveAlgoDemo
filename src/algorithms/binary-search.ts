@@ -8,7 +8,14 @@ export type SearchStep =
   | { kind: 'compare'; mid: number; value: number; target: number; verdict: 'lt' | 'gt' | 'eq' }
   | { kind: 'discard'; side: 'left' | 'right'; from: number; to: number; lo: number; hi: number }
   | { kind: 'found'; index: number; value: number; target: number; probes: number }
-  | { kind: 'not-found'; target: number; probes: number };
+  | {
+      kind: 'not-found';
+      target: number;
+      probes: number;
+      /** Neighbors around the gap the target falls into; null past either end. */
+      below: number | null;
+      above: number | null;
+    };
 
 export const SIZE = { min: 4, max: 48, default: 24 };
 export const TARGET = { min: 0, max: 99 };
@@ -95,7 +102,15 @@ export function buildSearchSteps(values: readonly number[], target: number): Sea
       hi = mid - 1;
     }
   }
-  steps.push({ kind: 'not-found', target, probes });
+  // The loop ends with lo at the insertion point: everything left of lo is
+  // smaller than the target, everything from lo up is larger.
+  steps.push({
+    kind: 'not-found',
+    target,
+    probes,
+    below: values[lo - 1] ?? null,
+    above: values[lo] ?? null,
+  });
   return steps;
 }
 
@@ -165,7 +180,7 @@ export const binarySearchAlgo: AlgorithmDef = defineAlgorithm<SearchStep>({
   id: 'binary-search',
   title: 'Binary Search',
   summary: 'Finds a target in a sorted array by halving the search window with every probe.',
-  idleText: 'Pick a size and a target and press Run.',
+  idleText: 'Each bar is one value; the line is the target. Press Run.',
   refs: [
     { label: 'Wikipedia', href: 'https://en.wikipedia.org/wiki/Binary_search' },
     { label: 'O(log n)', href: 'https://en.wikipedia.org/wiki/Binary_search#Performance' },
@@ -222,7 +237,11 @@ export const binarySearchAlgo: AlgorithmDef = defineAlgorithm<SearchStep>({
       case 'found':
         return `found ${step.target} at index ${step.index} — ${step.probes} ${plural(step.probes)}`;
       case 'not-found':
-        return `${step.target} is not in the array — ${step.probes} ${plural(step.probes)}`;
+        if (step.below === null && step.above !== null)
+          return `${step.target} is not in the array — smaller than every value`;
+        if (step.above === null && step.below !== null)
+          return `${step.target} is not in the array — larger than every value`;
+        return `${step.target} is not in the array — it falls between ${step.below} and ${step.above}`;
     }
   },
   chipFor(step: SearchStep) {
