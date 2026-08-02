@@ -7,7 +7,7 @@ line. First up: the Sieve of Eratosthenes.
 Two themes, switchable in the header: Signal (dark) and Notebook (light
 graph paper).
 
-Live: https://mountainsounds.github.io/sieveAlgoDemo/
+Live: https://algo.mtnsounds.com/
 
 Built with Vite + TypeScript, no framework. The algorithm is a pure function
 that emits a list of steps; a small player applies them to the grid and the

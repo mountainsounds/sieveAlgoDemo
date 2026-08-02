@@ -1,4 +1,6 @@
-name: Deploy to GitHub Pages
+# The site itself now lives at algo.mtnsounds.com. Pages only publishes a
+# redirect so the old URL keeps working for anything still linking to it.
+name: Deploy Pages redirect
 
 on:
   push:
@@ -22,17 +24,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+      # Same page as 404.html, so deep links into the old site redirect too.
+      - run: cp pages-redirect/index.html pages-redirect/404.html
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: pages-redirect
       - id: deployment
         uses: actions/deploy-pages@v4
