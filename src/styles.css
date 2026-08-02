@@ -1160,6 +1160,17 @@ h1 {
   animation: draw-strike var(--dur-ring) var(--ease-draw);
 }
 
+/* Quiet range note in the headroom above the short end of the staircase, so
+   what's actually in the array is stated before anyone types a target. */
+.range-note {
+  position: absolute;
+  left: 2px;
+  top: -2.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
+
 /* ---------- Target level ---------- */
 
 .level {

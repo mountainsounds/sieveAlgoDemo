@@ -56,6 +56,7 @@ export class SearchView implements AlgorithmView {
   private win: HTMLElement;
   private winLo: HTMLElement;
   private winHi: HTMLElement;
+  private rangeNote: HTMLElement;
   private lastProbe: HTMLElement | null = null;
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -72,6 +73,7 @@ export class SearchView implements AlgorithmView {
       `<div class="probe-caret" hidden>` +
       `<svg viewBox="0 0 24 14" aria-hidden="true"><path d="${CARET_PATH}"/></svg>` +
       `</div>` +
+      `<span class="range-note"></span>` +
       `</div></div>` +
       `<div class="rail">` +
       `<div class="win"><span class="win-lo"></span><span class="win-hi"></span></div>` +
@@ -84,6 +86,7 @@ export class SearchView implements AlgorithmView {
     this.win = this.part('.win');
     this.winLo = this.part('.win-lo');
     this.winHi = this.part('.win-hi');
+    this.rangeNote = this.part('.range-note');
   }
 
   private part(selector: string): HTMLElement {
@@ -160,6 +163,10 @@ export class SearchView implements AlgorithmView {
       this.bars.push(bar);
     });
     this.plot.insertBefore(frag, this.level);
+    const first = values[0];
+    const last = values[values.length - 1];
+    this.rangeNote.textContent =
+      first === undefined || last === undefined ? '' : `values ${first}–${last}`;
   }
 
   private resetRun(): void {

@@ -101,6 +101,22 @@ describe('buildSearchSteps', () => {
     }
   });
 
+  it('names the true neighbors around every missed target', () => {
+    for (const size of sizes) {
+      const values = sortedValues(size);
+      for (const target of targets) {
+        if (values.includes(target)) continue;
+        const last = buildSearchSteps(values, target).at(-1);
+        expect(last?.kind, `size=${size} target=${target}`).toBe('not-found');
+        if (last?.kind !== 'not-found') continue;
+        const below = values.filter((v) => v < target).at(-1) ?? null;
+        const above = values.find((v) => v > target) ?? null;
+        expect(last.below, `size=${size} target=${target}`).toBe(below);
+        expect(last.above, `size=${size} target=${target}`).toBe(above);
+      }
+    }
+  });
+
   it('never needs more than the probe cap the chip advertises', () => {
     for (const size of sizes) {
       const values = sortedValues(size);
