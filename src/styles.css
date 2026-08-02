@@ -80,6 +80,9 @@
   --btn-lift: none;
   --btn-press: scale(0.97);
   --chip-tilt: 0deg;
+  --menu-bg: #10151d;
+  --menu-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+  --menu-dur: 150ms;
 
   /* Motion personality: springy. */
   --ease-move: cubic-bezier(0.3, 1.45, 0.5, 1);
@@ -158,6 +161,9 @@
   --btn-lift: translate(-1px, -1px);
   --btn-press: translate(1px, 1px);
   --chip-tilt: -1.2deg;
+  --menu-bg: #fdfaf2;
+  --menu-shadow: 3px 4px 0 rgba(34, 48, 77, 0.12);
+  --menu-dur: 90ms;
 
   /* Motion personality: drafting table — quick, exact. */
   --ease-move: cubic-bezier(0.3, 1, 0.4, 1);
@@ -265,32 +271,112 @@ a:hover {
 }
 
 .algo-picker {
-  appearance: none;
+  position: relative;
+}
+
+.picker-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   font-family: var(--font-mono);
   font-size: 0.78rem;
   color: var(--text-soft);
-  background-color: transparent;
+  background: transparent;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0.5rem 1.9rem 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   max-width: 17rem;
   cursor: pointer;
-  background-repeat: no-repeat;
-  background-position: right 0.65rem center;
-  background-size: 0.55rem;
-  transition: border-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.algo-picker:hover {
+.picker-btn:hover {
   border-color: var(--line-strong);
+  color: var(--text);
 }
 
-[data-theme='signal'] .algo-picker {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a8b3c2' stroke-width='1.5'/%3E%3C/svg%3E");
+[data-theme='notebook'] .picker-btn {
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.5);
 }
 
-[data-theme='notebook'] .algo-picker {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23566a94' stroke-width='1.5'/%3E%3C/svg%3E");
+.picker-chevron {
+  width: 0.55rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  transition: transform 0.15s ease;
+}
+
+.algo-picker.open .picker-chevron {
+  transform: rotate(180deg);
+}
+
+.picker-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  width: max-content;
+  min-width: 100%;
+  max-width: 21rem;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--menu-bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  box-shadow: var(--menu-shadow);
+  animation: menu-in var(--menu-dur) ease-out;
+}
+
+[data-theme='notebook'] .picker-list {
+  border-radius: 5px;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
+.picker-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+[data-theme='notebook'] .picker-list li {
+  border-radius: 3px;
+}
+
+.picker-list .opt-index {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
+
+.picker-list li.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.picker-list li[aria-selected='true'] {
+  color: var(--accent);
+}
+
+.picker-list li[aria-selected='true'] .opt-index {
+  color: var(--accent);
+  opacity: 0.7;
 }
 
 .theme-switch {
@@ -913,7 +999,12 @@ h1 {
   .algo-picker {
     order: 3;
     flex-basis: 100%;
+  }
+
+  .picker-btn {
+    width: 100%;
     max-width: none;
+    justify-content: space-between;
   }
 
   .algo-head {
@@ -928,6 +1019,8 @@ h1 {
   .btn,
   a,
   .switch-opt span,
+  .picker-btn,
+  .picker-chevron,
   .cursor-ring {
     transition: none;
   }
@@ -936,7 +1029,8 @@ h1 {
   .tile.prime,
   .tile.struck .tile-strike path,
   .tile.prime .tile-ring path,
-  .count-chip.final {
+  .count-chip.final,
+  .picker-list {
     animation: none;
   }
 

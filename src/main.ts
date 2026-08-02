@@ -10,6 +10,7 @@ import { Player } from './engine/player';
 import { Grid } from './ui/grid';
 import { CodePanel } from './ui/code-panel';
 import { statusText } from './ui/status';
+import { AlgoPicker } from './ui/picker';
 import { initTheme } from './theme';
 
 function el<T extends HTMLElement>(id: string): T {
@@ -36,16 +37,11 @@ const resetBtn = el<HTMLButtonElement>('resetBtn');
 const speedSelect = el<HTMLSelectElement>('speedSelect');
 const status = el<HTMLElement>('status');
 const countChip = el<HTMLElement>('countChip');
-const picker = el<HTMLSelectElement>('algoPicker');
 
 // The registry is the source of truth for the picker and the page head.
-picker.replaceChildren(
-  ...algorithms.map(
-    (entry, index) =>
-      new Option(`${String(index + 1).padStart(2, '0')} · ${entry.title}`, entry.id),
-  ),
-);
-picker.value = algo.id;
+new AlgoPicker(el('algoPicker'), algorithms, algo.id, () => {
+  // Single algorithm today; switching becomes real when a second one lands.
+});
 document.documentElement.dataset.algo = algo.id;
 el('algoIndex').textContent = 'algorithm 01';
 el('algoTitle').textContent = algo.title;

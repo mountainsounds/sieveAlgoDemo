@@ -6,19 +6,19 @@ export type PlayerState = 'idle' | 'running' | 'paused' | 'done';
 function delayFor(step: Step): number {
   switch (step.kind) {
     case 'init':
-      return 500;
+      return 900;
     case 'strike-units':
-      return 550;
+      return 1000;
     case 'prime-found':
-      return 550;
+      return 1100;
     case 'composite-skip':
-      return 350;
-    case 'strike':
-      return 160;
-    case 'sweep-done':
       return 700;
+    case 'strike':
+      return 380;
+    case 'sweep-done':
+      return 1300;
     case 'count-visit':
-      return step.prime ? 220 : 70;
+      return step.prime ? 480 : 160;
     case 'done':
       return 0;
   }
