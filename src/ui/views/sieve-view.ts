@@ -1,7 +1,8 @@
-import type { Step } from '../algorithms/types';
+import type { AlgorithmView, ControlValues } from '../../algorithms/types';
+import type { SieveStep } from '../../algorithms/sieve';
 
 /**
- * Renders the number grid and applies steps to it.
+ * Renders the number grid and applies sieve steps to it.
  * Tiles are held in an array — no id lookups, no way to touch a stale DOM.
  *
  * Each tile carries two SVG marks used by the Notebook theme: a hand-ruled
@@ -36,13 +37,19 @@ function tileMarkup(value: number): string {
   );
 }
 
-export class Grid {
+export class SieveView implements AlgorithmView {
   private tiles: HTMLElement[] = [];
   private cursorTile: HTMLElement | null = null;
   private cursorValue: number | null = null;
   private ring: HTMLElement | null = null;
 
-  constructor(private root: HTMLElement) {}
+  constructor(private root: HTMLElement) {
+    this.root.className = 'grid';
+  }
+
+  preview(values: ControlValues): void {
+    this.build(values['n'] ?? 2);
+  }
 
   build(n: number): void {
     this.root.textContent = '';
@@ -65,8 +72,9 @@ export class Grid {
     this.root.appendChild(frag);
   }
 
-  clear(): void {
+  destroy(): void {
     this.root.textContent = '';
+    this.root.className = '';
     this.tiles = [];
     this.cursorTile = null;
     this.cursorValue = null;
@@ -78,7 +86,9 @@ export class Grid {
     if (this.cursorValue !== null) this.placeRing(this.cursorValue, true);
   }
 
-  apply(step: Step): void {
+  apply(raw: unknown): void {
+    // Only steps from the sieve's buildSteps ever reach this view.
+    const step = raw as SieveStep;
     switch (step.kind) {
       case 'init':
         this.build(step.n);

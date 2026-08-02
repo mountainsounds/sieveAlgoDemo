@@ -18,8 +18,8 @@
 
   --bg: #0a0c10;
   --bg-layer:
-    radial-gradient(70rem 46rem at 78% -6rem, rgba(63, 224, 255, 0.07), transparent 60%),
-    radial-gradient(52rem 40rem at 12% 110%, rgba(63, 224, 255, 0.04), transparent 55%);
+    radial-gradient(70rem 46rem at 78% -6rem, rgba(var(--accent-rgb), 0.07), transparent 60%),
+    radial-gradient(52rem 40rem at 12% 110%, rgba(var(--accent-rgb), 0.04), transparent 55%);
   --scanlines: repeating-linear-gradient(
     0deg,
     rgba(255, 255, 255, 0.022) 0 1px,
@@ -35,12 +35,14 @@
   --line-strong: rgba(232, 238, 246, 0.22);
   --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 
-  /* Per-algorithm electric accent — the sieve runs cyan. */
+  /* Per-algorithm electric accent — the sieve runs cyan. Overrides live in
+     the [data-algo] blocks near the end of the token section. */
   --accent: #3fe0ff;
   --accent-strong: #7deaff;
   --accent-contrast: #04161c;
-  --accent-soft: rgba(63, 224, 255, 0.13);
-  --accent-glow: rgba(63, 224, 255, 0.42);
+  --accent-rgb: 63, 224, 255;
+  --accent-soft: rgba(var(--accent-rgb), 0.13);
+  --accent-glow: rgba(var(--accent-rgb), 0.42);
   --wordmark-dot: var(--accent);
   --wordmark-dot-glow: 0 0 8px var(--accent-glow);
 
@@ -51,18 +53,18 @@
   --tile-struck-text: rgba(226, 236, 248, 0.2);
   --tile-prime-bg: var(--accent);
   --tile-prime-text: #032028;
-  --tile-prime-glow: 0 0 14px rgba(63, 224, 255, 0.38), 0 0 2px rgba(63, 224, 255, 0.55);
+  --tile-prime-glow: 0 0 14px rgba(var(--accent-rgb), 0.38), 0 0 2px rgba(var(--accent-rgb), 0.55);
   --strike-ink: transparent;
   --ring-ink: transparent;
 
   --cursor-color: var(--accent);
   --cursor-radius: 9px;
   --cursor-tilt: 0deg;
-  --cursor-glow: 0 0 14px var(--accent-glow), inset 0 0 8px rgba(63, 224, 255, 0.22);
+  --cursor-glow: 0 0 14px var(--accent-glow), inset 0 0 8px rgba(var(--accent-rgb), 0.22);
 
   --flash-bg: #c2f4ff;
   --flash-text: #03161c;
-  --flash-glow: 0 0 20px 5px rgba(63, 224, 255, 0.5);
+  --flash-glow: 0 0 20px 5px rgba(var(--accent-rgb), 0.5);
   --flash-scale: 1.09;
   --flash-settle: 0.985;
   --pop-peak: 1.14;
@@ -72,17 +74,57 @@
   --code-number: #ffcf7d;
   --code-comment: rgba(232, 238, 246, 0.38);
   --code-punct: rgba(232, 238, 246, 0.55);
-  --code-active-bg: linear-gradient(90deg, rgba(63, 224, 255, 0.12), rgba(63, 224, 255, 0.03));
+  --code-active-bg: linear-gradient(
+    90deg,
+    rgba(var(--accent-rgb), 0.12),
+    rgba(var(--accent-rgb), 0.03)
+  );
   --code-active-bar: var(--accent);
 
   --btn-shadow: none;
-  --btn-shadow-hover: 0 0 16px rgba(63, 224, 255, 0.35);
+  --btn-shadow-hover: 0 0 16px rgba(var(--accent-rgb), 0.35);
   --btn-lift: none;
   --btn-press: scale(0.97);
   --chip-tilt: 0deg;
   --menu-bg: #10151d;
   --menu-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
   --menu-dur: 150ms;
+
+  /* Binary search strip: LED columns under a glowing trigger level. */
+  --bar-bg: linear-gradient(
+    180deg,
+    rgba(var(--accent-rgb), 0.5),
+    rgba(var(--accent-rgb), 0.12) 62%,
+    rgba(var(--accent-rgb), 0.2)
+  );
+  --bar-outline: none;
+  --bar-radius: 2px 2px 0 0;
+  --bar-shadow: inset 0 1px 0 rgba(var(--accent-rgb), 0.6);
+  --bar-dead-opacity: 0.2;
+  --bar-dead-filter: saturate(0.25) brightness(0.6);
+  --bar-dead-shift: 3px;
+  --bar-probe-bg: linear-gradient(180deg, var(--accent-strong), rgba(var(--accent-rgb), 0.45));
+  --bar-probe-shadow: 0 0 16px rgba(var(--accent-rgb), 0.5);
+  --bar-found-bg: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  --bar-found-shadow: 0 0 18px rgba(var(--accent-rgb), 0.55);
+  --scratch-ink: transparent;
+  --search-ring-ink: transparent;
+  --level-line: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-rgb), 0.9) 4%,
+    rgba(var(--accent-rgb), 0.9) 96%,
+    transparent
+  );
+  --level-glow: 0 0 12px rgba(var(--accent-rgb), 0.5);
+  --level-ink: transparent;
+  --level-tag-ink: var(--accent);
+  --caret-ink: var(--accent);
+  --caret-glow: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.6));
+  --tag-bg: rgba(13, 18, 25, 0.92);
+  --tag-border: var(--line-strong);
+  --tag-tilt: 0deg;
+  --win-ink: rgba(var(--accent-rgb), 0.65);
 
   /* Motion personality: springy. */
   --ease-move: cubic-bezier(0.3, 1.45, 0.5, 1);
@@ -118,7 +160,8 @@
   --accent: #2d55c8;
   --accent-strong: #1d3f9f;
   --accent-contrast: #f9f6ee;
-  --accent-soft: rgba(45, 85, 200, 0.1);
+  --accent-rgb: 45, 85, 200;
+  --accent-soft: rgba(var(--accent-rgb), 0.1);
   --accent-glow: transparent;
   --pencil: #d64a3b;
   --wordmark-dot: var(--pencil);
@@ -165,6 +208,39 @@
   --menu-shadow: 3px 4px 0 rgba(34, 48, 77, 0.12);
   --menu-dur: 90ms;
 
+  /* Binary search strip: pencil-shaded columns under a red dashed rule. */
+  --bar-bg: repeating-linear-gradient(-48deg, rgba(34, 48, 77, 0.34) 0 1px, transparent 1px 3.5px);
+  --bar-outline: 1px solid rgba(34, 48, 77, 0.5);
+  --bar-radius: 1px 1px 0 0;
+  --bar-shadow: none;
+  --bar-dead-opacity: 0.3;
+  --bar-dead-filter: none;
+  --bar-dead-shift: 0px;
+  --bar-probe-bg: repeating-linear-gradient(
+    -48deg,
+    rgba(34, 48, 77, 0.6) 0 1px,
+    transparent 1px 3px
+  );
+  --bar-probe-shadow: none;
+  --bar-found-bg: repeating-linear-gradient(
+    -48deg,
+    rgba(var(--accent-rgb), 0.72) 0 1px,
+    transparent 1px 3px
+  );
+  --bar-found-shadow: none;
+  --scratch-ink: #33416e;
+  --search-ring-ink: var(--pencil);
+  --level-line: none;
+  --level-glow: none;
+  --level-ink: var(--pencil);
+  --level-tag-ink: var(--pencil);
+  --caret-ink: var(--pencil);
+  --caret-glow: none;
+  --tag-bg: var(--menu-bg);
+  --tag-border: rgba(34, 48, 77, 0.45);
+  --tag-tilt: -1.2deg;
+  --win-ink: rgba(34, 48, 77, 0.62);
+
   /* Motion personality: drafting table — quick, exact. */
   --ease-move: cubic-bezier(0.3, 1, 0.4, 1);
   --dur-move: 140ms;
@@ -173,6 +249,27 @@
   --dur-ring: 320ms;
   --ease-pop: cubic-bezier(0.3, 1.3, 0.6, 1);
   --dur-pop: 240ms;
+}
+
+/* ---------- Per-algorithm accent ----------
+   The sieve's cyan/ink-blue is the theme default above. Each further
+   algorithm re-keys the accent family off data-algo, so the collection
+   reads as a set: same lab, different bench. */
+
+:root[data-theme='signal'][data-algo='binary-search'] {
+  --accent: #46f0a0;
+  --accent-strong: #8cffc8;
+  --accent-contrast: #032013;
+  --accent-rgb: 70, 240, 160;
+  --code-keyword: #58f2ad;
+}
+
+:root[data-theme='notebook'][data-algo='binary-search'] {
+  --accent: #1e7a4e;
+  --accent-strong: #155f3c;
+  --accent-contrast: #f7faf5;
+  --accent-rgb: 30, 122, 78;
+  --code-keyword: #1e7a4e;
 }
 
 * {
@@ -605,6 +702,11 @@ h1 {
   padding: 1.05rem 1.2rem;
 }
 
+/* Registry-driven fields render here; the wrapper stays out of the layout. */
+.control-fields {
+  display: contents;
+}
+
 .field,
 .speed {
   display: flex;
@@ -893,13 +995,368 @@ h1 {
   100% {
     box-shadow:
       0 0 14px var(--accent-glow),
-      inset 0 0 8px rgba(63, 224, 255, 0.22);
+      inset 0 0 8px rgba(var(--accent-rgb), 0.22);
   }
   50% {
     box-shadow:
-      0 0 5px rgba(63, 224, 255, 0.2),
-      inset 0 0 3px rgba(63, 224, 255, 0.1);
+      0 0 5px rgba(var(--accent-rgb), 0.2),
+      inset 0 0 3px rgba(var(--accent-rgb), 0.1);
   }
+}
+
+/* ---------- Binary search strip ----------
+   Sorted values as a row of bars; the target as a horizontal level across
+   them. Signal reads it as a trigger level over LED columns, Notebook as a
+   red-pencil rule over shaded columns on the graph paper. Both sets of marks
+   exist in both themes; the unused set is visibility-hidden so a mid-run
+   theme switch never replays draws (same trick as the sieve tiles). */
+
+.search {
+  position: relative;
+  margin-top: 1.25rem;
+}
+
+.chart {
+  /* Headroom so the probe tag clears the tallest bars. */
+  padding-top: 2.9rem;
+}
+
+.plot {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: clamp(170px, 23vh, 232px);
+}
+
+.plot::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.bar {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: calc(var(--h, 0) * 1%);
+  background: var(--bar-bg);
+  border: var(--bar-outline);
+  border-bottom: none;
+  border-radius: var(--bar-radius);
+  box-shadow: var(--bar-shadow);
+  transform-origin: bottom;
+  animation: bar-rise var(--dur-pop) var(--ease-pop) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+@keyframes bar-rise {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.bar.probe {
+  background: var(--bar-probe-bg);
+  box-shadow: var(--bar-probe-shadow);
+}
+
+/* Ends of a discarded half power down in a cascade (--die-delay from JS). */
+.bar.dead {
+  opacity: var(--bar-dead-opacity);
+  filter: var(--bar-dead-filter);
+  transform: translateY(var(--bar-dead-shift));
+  animation: bar-die var(--dur-move) var(--ease-move) both;
+  animation-delay: var(--die-delay, 0ms);
+}
+
+@keyframes bar-die {
+  from {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+
+.bar.found {
+  background: var(--bar-found-bg);
+  box-shadow: var(--bar-found-shadow);
+  animation: prime-pop var(--dur-pop) var(--ease-pop);
+}
+
+.bar-scratch,
+.bar-ring {
+  position: absolute;
+  pointer-events: none;
+}
+
+.bar-scratch {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bar-ring {
+  top: -14px;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translateX(-50%);
+}
+
+.bar-scratch path,
+.bar-ring path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.bar-scratch path {
+  stroke: var(--scratch-ink);
+  stroke-width: 1.4px;
+  opacity: 0.7;
+}
+
+.bar-ring path {
+  stroke: var(--search-ring-ink);
+  stroke-width: 1.7px;
+  opacity: 0.9;
+}
+
+/* Marks are hidden until Notebook needs them — the squeezed viewBox can leak
+   hairline fragments of the dash-hidden path on thin bars, so dash math alone
+   can't be trusted to hide them. The scratch reveal rides the same delay as
+   the cascade; draws still finish invisibly across theme flips. */
+.bar-scratch {
+  visibility: hidden;
+  transition: visibility 0s var(--die-delay, 0ms);
+}
+
+.bar-ring {
+  visibility: hidden;
+}
+
+[data-theme='notebook'] .bar.dead .bar-scratch {
+  visibility: visible;
+}
+
+[data-theme='notebook'] .bar.found .bar-ring {
+  visibility: visible;
+}
+
+.bar.dead .bar-scratch path {
+  stroke-dashoffset: 0;
+  animation: draw-strike var(--dur-strike) var(--ease-draw) both;
+  animation-delay: var(--die-delay, 0ms);
+}
+
+.bar.found .bar-ring path {
+  stroke-dashoffset: 0;
+  animation: draw-strike var(--dur-ring) var(--ease-draw);
+}
+
+/* ---------- Target level ---------- */
+
+.level {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--ty, 0) * 1%);
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 3;
+  transition: bottom var(--dur-move) var(--ease-move);
+}
+
+.level.on {
+  visibility: visible;
+}
+
+.level.miss {
+  opacity: 0.45;
+}
+
+.level::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  background: var(--level-line);
+  box-shadow: var(--level-glow);
+  transform-origin: left;
+}
+
+[data-theme='notebook'] .level::before {
+  visibility: hidden;
+}
+
+.level.on::before {
+  animation:
+    level-in var(--dur-strike) var(--ease-draw) both,
+    level-breathe 2.8s ease-in-out 0.9s infinite;
+}
+
+.level-pencil {
+  position: absolute;
+  left: 0;
+  top: -4px;
+  width: 100%;
+  height: 8px;
+}
+
+.level-pencil path {
+  fill: none;
+  stroke: var(--level-ink);
+  stroke-width: 2px;
+  stroke-dasharray: 13 8;
+  stroke-linecap: round;
+}
+
+[data-theme='signal'] .level-pencil {
+  visibility: hidden;
+}
+
+.level.on .level-pencil {
+  animation: level-clip var(--dur-strike) var(--ease-draw) both;
+}
+
+@keyframes level-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes level-clip {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes level-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.level-tag {
+  position: absolute;
+  right: 6px;
+  bottom: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--level-tag-ink);
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  transform: rotate(var(--tag-tilt));
+}
+
+/* ---------- Probe markers ---------- */
+
+.probe-tag {
+  position: absolute;
+  left: clamp(3rem, var(--x, 50%), calc(100% - 3rem));
+  bottom: calc(var(--th, 0) * 1% + 12px);
+  transform: translateX(-50%) rotate(var(--tag-tilt));
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text);
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-left: 2px solid var(--accent);
+  border-radius: 5px;
+  padding: 0.22rem 0.5rem;
+  white-space: nowrap;
+  z-index: 4;
+  transition:
+    left var(--dur-move) var(--ease-move),
+    bottom var(--dur-move) var(--ease-move);
+}
+
+.probe-tag.hit {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.probe-caret {
+  position: absolute;
+  left: var(--x, 50%);
+  bottom: -1.55rem;
+  width: 22px;
+  height: 13px;
+  transform: translateX(-50%);
+  z-index: 4;
+  filter: var(--caret-glow);
+  transition: left var(--dur-move) var(--ease-move);
+}
+
+.probe-caret svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.probe-caret path {
+  fill: none;
+  stroke: var(--caret-ink);
+  stroke-width: 2px;
+  stroke-linecap: round;
+}
+
+/* ---------- Window bracket ---------- */
+
+.rail {
+  position: relative;
+  height: 2.6rem;
+}
+
+.win {
+  position: absolute;
+  top: 1.45rem;
+  height: 7px;
+  border-inline: 2px solid var(--win-ink);
+  border-bottom: 2px solid var(--win-ink);
+  transition:
+    left var(--dur-move) var(--ease-move),
+    width var(--dur-move) var(--ease-move);
+}
+
+.win-lo,
+.win-hi {
+  position: absolute;
+  top: 9px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-faint);
+}
+
+.win-lo {
+  left: 0;
+}
+
+.win-hi {
+  right: 0;
+}
+
+.win.tight .win-lo,
+.win.tight .win-hi {
+  display: none;
 }
 
 /* ---------- Readout ---------- */
@@ -943,7 +1400,7 @@ h1 {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-soft);
-  box-shadow: 0 0 12px rgba(63, 224, 255, 0.18);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.18);
 }
 
 [data-theme='notebook'] .count-chip.final {
@@ -993,6 +1450,14 @@ h1 {
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(2.2rem, 1fr));
   }
+
+  .chart {
+    padding-top: 2.6rem;
+  }
+
+  .plot {
+    height: clamp(150px, 26vh, 210px);
+  }
 }
 
 @media (max-width: 560px) {
@@ -1021,7 +1486,12 @@ h1 {
   .switch-opt span,
   .picker-btn,
   .picker-chevron,
-  .cursor-ring {
+  .cursor-ring,
+  .level,
+  .probe-tag,
+  .probe-caret,
+  .win,
+  .bar-scratch {
     transition: none;
   }
 
@@ -1030,7 +1500,14 @@ h1 {
   .tile.struck .tile-strike path,
   .tile.prime .tile-ring path,
   .count-chip.final,
-  .picker-list {
+  .picker-list,
+  .bar,
+  .bar.dead,
+  .bar.found,
+  .bar.dead .bar-scratch path,
+  .bar.found .bar-ring path,
+  .level.on::before,
+  .level.on .level-pencil {
     animation: none;
   }
 

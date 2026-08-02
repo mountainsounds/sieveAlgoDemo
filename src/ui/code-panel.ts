@@ -1,5 +1,5 @@
 import Prism from 'prismjs';
-import type { CodeListing, Step } from '../algorithms/types';
+import type { CodeListing } from '../algorithms/types';
 
 // The panel drives Prism itself; auto-highlight would wipe the line wrappers.
 Prism.manual = true;
@@ -35,7 +35,7 @@ export class CodePanel {
     this.active = null;
   }
 
-  apply(step: Step): void {
+  apply(step: unknown): void {
     if (this.listing === null) return;
     const line = this.listing.lineFor(step);
     if (line === null) return;

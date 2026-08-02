@@ -5,11 +5,10 @@ import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import './styles.css';
 
-import { algorithms } from './algorithms';
+import type { AlgorithmView, ControlValues, NumberControl } from './algorithms/types';
+import { registry, type AlgorithmEntry } from './registry';
 import { Player } from './engine/player';
-import { Grid } from './ui/grid';
 import { CodePanel } from './ui/code-panel';
-import { statusText } from './ui/status';
 import { AlgoPicker } from './ui/picker';
 import { initTheme } from './theme';
 
@@ -26,51 +25,170 @@ function mustGet<T>(value: T | undefined, what: string): T {
 
 initTheme();
 
-const algo = mustGet(algorithms[0], 'no algorithms registered');
-const listing = mustGet(algo.listings[0], 'algorithm has no code listing');
-
 const controls = el<HTMLFormElement>('controls');
-const numInput = el<HTMLInputElement>('numInput');
+const controlFields = el<HTMLElement>('controlFields');
 const runBtn = el<HTMLButtonElement>('runBtn');
 const stepBtn = el<HTMLButtonElement>('stepBtn');
 const resetBtn = el<HTMLButtonElement>('resetBtn');
 const speedSelect = el<HTMLSelectElement>('speedSelect');
 const status = el<HTMLElement>('status');
 const countChip = el<HTMLElement>('countChip');
+const stage = el<HTMLElement>('stage');
+const refsNav = el<HTMLElement>('algoRefs');
 
-// The registry is the source of truth for the picker and the page head.
-new AlgoPicker(el('algoPicker'), algorithms, algo.id, () => {
-  // Single algorithm today; switching becomes real when a second one lands.
-});
-document.documentElement.dataset.algo = algo.id;
-el('algoIndex').textContent = 'algorithm 01';
-el('algoTitle').textContent = algo.title;
-el('algoSummary').textContent = algo.summary;
-
-const grid = new Grid(el('grid'));
 const codePanel = new CodePanel(el('codeBlock'), el('codeLabel'));
 const player = new Player();
-
-codePanel.show(listing);
-numInput.value = String(algo.input.default);
-grid.build(algo.input.default);
 
 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   speedSelect.value = '4';
   player.speed = 4;
 }
 
+/** URL path ↔ algorithm id. `/` means the first algorithm in the registry. */
+function entryForPath(pathname: string): AlgorithmEntry | null {
+  const slug = pathname.replace(/^\/+|\/+$/g, '');
+  if (slug === '') return registry[0] ?? null;
+  return registry.find((candidate) => candidate.def.id === slug) ?? null;
+}
+
+let entry = mustGet(registry[0], 'no algorithms registered');
+let view: AlgorithmView | null = null;
+let fields: { spec: NumberControl; input: HTMLInputElement }[] = [];
+
+function renderControls(entryFields: readonly NumberControl[]): void {
+  controlFields.textContent = '';
+  fields = entryFields.map((spec) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field';
+    const label = document.createElement('label');
+    label.className = 'panel-label';
+    label.htmlFor = `ctl-${spec.id}`;
+    label.textContent = `${spec.label} (${spec.min}–${spec.max})`;
+    const input = document.createElement('input');
+    input.id = `ctl-${spec.id}`;
+    input.name = spec.id;
+    input.type = 'number';
+    input.inputMode = 'numeric';
+    input.min = String(spec.min);
+    input.max = String(spec.max);
+    input.step = '1';
+    input.value = String(spec.default);
+    input.addEventListener('input', () => onFieldInput(spec, input));
+    wrap.append(label, input);
+    controlFields.appendChild(wrap);
+    return { spec, input };
+  });
+}
+
+function parseField(spec: NumberControl, input: HTMLInputElement): number | null {
+  const raw = input.value.trim();
+  const value = Number(raw);
+  if (raw === '' || !Number.isInteger(value) || value < spec.min || value > spec.max) return null;
+  return value;
+}
+
+/** Every control's value, or null after reporting the first invalid one. */
+function readInputs(): ControlValues | null {
+  const values: Record<string, number> = {};
+  for (const { spec, input } of fields) {
+    const value = parseField(spec, input);
+    if (value === null) {
+      status.textContent = `${spec.label} must be a whole number from ${spec.min} to ${spec.max}.`;
+      input.focus();
+      return null;
+    }
+    values[spec.id] = value;
+  }
+  return values;
+}
+
+/** Values for the idle preview: each field if valid, else its default. */
+function previewValues(): ControlValues {
+  const values: Record<string, number> = {};
+  for (const { spec, input } of fields) {
+    values[spec.id] = parseField(spec, input) ?? spec.default;
+  }
+  return values;
+}
+
+function onFieldInput(spec: NumberControl, input: HTMLInputElement): void {
+  if (player.state !== 'idle') {
+    status.textContent = `New ${spec.label} applies on the next Run (Reset first).`;
+    return;
+  }
+  if (parseField(spec, input) !== null) view?.preview(previewValues());
+}
+
+function hideChip(): void {
+  countChip.hidden = true;
+  countChip.classList.remove('final');
+}
+
+function mount(next: AlgorithmEntry): void {
+  entry = next;
+  const def = next.def;
+  const index = String(registry.indexOf(next) + 1).padStart(2, '0');
+  document.documentElement.dataset.algo = def.id;
+  document.title = `${def.title} · algo.`;
+  el('algoIndex').textContent = `algorithm ${index}`;
+  el('algoTitle').textContent = def.title;
+  el('algoSummary').textContent = def.summary;
+  refsNav.textContent = '';
+  for (const ref of def.refs) {
+    const link = document.createElement('a');
+    link.href = ref.href;
+    link.target = '_blank';
+    link.rel = 'noreferrer';
+    link.textContent = ref.label;
+    refsNav.appendChild(link);
+  }
+  renderControls(def.controls);
+  codePanel.show(mustGet(def.listings[0], 'algorithm has no code listing'));
+  view = next.createView(stage);
+  view.preview(previewValues());
+  hideChip();
+  status.textContent = def.idleText;
+}
+
+function unmount(): void {
+  player.load([], () => 0);
+  view?.destroy();
+  view = null;
+  codePanel.setActiveLine(null);
+}
+
+function switchTo(next: AlgorithmEntry, push: boolean): void {
+  if (next === entry && view !== null) return;
+  unmount();
+  mount(next);
+  picker.select(next.def.id);
+  if (push) history.pushState(null, '', `/${next.def.id}`);
+}
+
+const picker = new AlgoPicker(
+  el('algoPicker'),
+  registry.map((candidate) => candidate.def),
+  (entryForPath(location.pathname) ?? entry).def.id,
+  (id) => {
+    const next = registry.find((candidate) => candidate.def.id === id);
+    if (next !== undefined) switchTo(next, true);
+  },
+);
+
+window.addEventListener('popstate', () => {
+  const next = entryForPath(location.pathname);
+  if (next !== null) switchTo(next, false);
+});
+
 player.onStep = (step) => {
-  grid.apply(step);
+  view?.apply(step);
   codePanel.apply(step);
-  status.textContent = statusText(step);
-  if (step.kind === 'count-visit') {
+  status.textContent = entry.def.statusText(step);
+  const chip = entry.def.chipFor(step);
+  if (chip !== null) {
     countChip.hidden = false;
-    countChip.textContent = `count = ${step.count}`;
-  } else if (step.kind === 'done') {
-    countChip.hidden = false;
-    countChip.classList.add('final');
-    countChip.textContent = `${step.count} primes below ${step.n}`;
+    countChip.classList.toggle('final', chip.final === true);
+    countChip.textContent = chip.text;
   }
 };
 
@@ -79,33 +197,10 @@ player.onState = (state) => {
   stepBtn.disabled = state === 'done';
 };
 
-function readInput(): number | null {
-  const raw = numInput.value.trim();
-  const value = Number(raw);
-  if (raw === '' || !Number.isInteger(value) || value < algo.input.min || value > algo.input.max) {
-    status.textContent = `n must be a whole number from ${algo.input.min} to ${algo.input.max}.`;
-    numInput.focus();
-    return null;
-  }
-  return value;
-}
-
-function hideChip(): void {
-  countChip.hidden = true;
-  countChip.classList.remove('final');
-}
-
-/** n for the idle preview grid: the input if valid, else the default. */
-function previewN(): number {
-  const value = Number(numInput.value.trim());
-  return Number.isInteger(value) && value >= algo.input.min && value <= algo.input.max
-    ? value
-    : algo.input.default;
-}
-
-function startRun(n: number): void {
+function startRun(values: ControlValues): void {
   hideChip();
-  player.load(algo.buildSteps(n));
+  const def = entry.def;
+  player.load(def.buildSteps(values), (step) => def.delayFor(step));
   player.play();
 }
 
@@ -119,51 +214,45 @@ controls.addEventListener('submit', (e) => {
     player.play();
     return;
   }
-  const n = readInput();
-  if (n !== null) startRun(n);
+  const values = readInputs();
+  if (values !== null) startRun(values);
 });
 
 stepBtn.addEventListener('click', () => {
   if (player.state === 'idle') {
-    const n = readInput();
-    if (n === null) return;
+    const values = readInputs();
+    if (values === null) return;
     hideChip();
-    player.load(algo.buildSteps(n));
+    const def = entry.def;
+    player.load(def.buildSteps(values), (step) => def.delayFor(step));
   }
   player.stepOnce();
 });
 
 resetBtn.addEventListener('click', () => {
-  player.load([]);
-  grid.build(previewN());
+  player.load([], () => 0);
+  view?.preview(previewValues());
   codePanel.setActiveLine(null);
   hideChip();
-  status.textContent = 'Pick n and press Run.';
-});
-
-// A new n takes effect on the next Run — never mid-flight.
-numInput.addEventListener('input', () => {
-  if (player.state !== 'idle') {
-    status.textContent = 'New n applies on the next Run (Reset first).';
-    return;
-  }
-  const value = Number(numInput.value.trim());
-  if (Number.isInteger(value) && value >= algo.input.min && value <= algo.input.max) {
-    grid.build(value);
-  }
+  status.textContent = entry.def.idleText;
 });
 
 speedSelect.addEventListener('change', () => {
   player.speed = Number(speedSelect.value);
 });
 
-// Keep the cursor ring seated when a resize reflows the grid.
+// Keep absolutely positioned markers seated when a resize reflows the stage.
 let relayoutQueued = false;
 window.addEventListener('resize', () => {
   if (relayoutQueued) return;
   relayoutQueued = true;
   requestAnimationFrame(() => {
     relayoutQueued = false;
-    grid.relayout();
+    view?.relayout();
   });
 });
+
+// Boot: honor a deep link; normalize unknown paths back to the root.
+const initial = entryForPath(location.pathname);
+if (initial === null) history.replaceState(null, '', '/');
+mount(initial ?? entry);

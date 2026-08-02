@@ -1,4 +1,15 @@
-import type { AlgorithmDef, Step } from './types';
+import { defineAlgorithm, type AlgorithmDef, type ControlValues } from './types';
+
+/** One visual moment in a sieve run. */
+export type SieveStep =
+  | { kind: 'init'; n: number }
+  | { kind: 'strike-units' }
+  | { kind: 'prime-found'; i: number }
+  | { kind: 'composite-skip'; i: number }
+  | { kind: 'strike'; value: number; factor: number; multiplier: number }
+  | { kind: 'sweep-done' }
+  | { kind: 'count-visit'; i: number; prime: boolean; count: number }
+  | { kind: 'done'; count: number; n: number };
 
 /** Counts primes below n (LeetCode "Count Primes" semantics). */
 export function countPrimes(n: number): number {
@@ -21,8 +32,8 @@ export function countPrimes(n: number): number {
   return count;
 }
 
-export function buildSteps(n: number): Step[] {
-  const steps: Step[] = [{ kind: 'init', n }, { kind: 'strike-units' }];
+export function buildSteps(n: number): SieveStep[] {
+  const steps: SieveStep[] = [{ kind: 'init', n }, { kind: 'strike-units' }];
   const isPrime = new Array<boolean>(n).fill(true);
   isPrime[0] = false;
   isPrime[1] = false;
@@ -70,7 +81,7 @@ const jsListing = {
   }
   return count;
 }`,
-  lineFor(step: Step): number | null {
+  lineFor(step: SieveStep): number | null {
     switch (step.kind) {
       case 'init':
         return 2;
@@ -91,12 +102,67 @@ const jsListing = {
   },
 };
 
-export const sieve: AlgorithmDef = {
+export const sieve: AlgorithmDef = defineAlgorithm<SieveStep>({
   id: 'sieve-of-eratosthenes',
   title: 'Sieve of Eratosthenes',
   summary: 'Counts the primes below n by striking out the multiples of each prime.',
-  input: { min: 2, max: 120, default: 30 },
-  buildSteps,
-  result: countPrimes,
+  idleText: 'Pick n and press Run.',
+  refs: [
+    { label: 'Wikipedia', href: 'https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes' },
+    {
+      label: 'O(n log log n)',
+      href: 'https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes#Algorithmic_complexity',
+    },
+    { label: 'LeetCode 204', href: 'https://leetcode.com/problems/count-primes/' },
+  ],
+  controls: [{ id: 'n', label: 'n', min: 2, max: 120, default: 30 }],
+  buildSteps(values: ControlValues): SieveStep[] {
+    return buildSteps(values['n'] ?? 30);
+  },
+  delayFor(step: SieveStep): number {
+    switch (step.kind) {
+      case 'init':
+        return 900;
+      case 'strike-units':
+        return 1000;
+      case 'prime-found':
+        return 1100;
+      case 'composite-skip':
+        return 700;
+      case 'strike':
+        return 380;
+      case 'sweep-done':
+        return 1300;
+      case 'count-visit':
+        return step.prime ? 480 : 160;
+      case 'done':
+        return 0;
+    }
+  },
+  statusText(step: SieveStep): string {
+    switch (step.kind) {
+      case 'init':
+        return `n = ${step.n} — candidates 0 through ${step.n - 1}`;
+      case 'strike-units':
+        return '0 and 1 are not prime';
+      case 'prime-found':
+        return `${step.i} is prime — striking its multiples`;
+      case 'composite-skip':
+        return `${step.i} is already struck — skipping`;
+      case 'strike':
+        return `${step.value} = ${step.factor} × ${step.multiplier} — struck`;
+      case 'sweep-done':
+        return 'sweep complete — every unstruck number is prime';
+      case 'count-visit':
+        return step.prime ? `${step.i} is prime — count = ${step.count}` : `${step.i} — struck`;
+      case 'done':
+        return `${step.count} primes below ${step.n}`;
+    }
+  },
+  chipFor(step: SieveStep) {
+    if (step.kind === 'count-visit') return { text: `count = ${step.count}` };
+    if (step.kind === 'done') return { text: `${step.count} primes below ${step.n}`, final: true };
+    return null;
+  },
   listings: [jsListing],
-};
+});

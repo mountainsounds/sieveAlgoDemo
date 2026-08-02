@@ -1,14 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Player } from '../src/engine/player';
-import type { Step } from '../src/algorithms/types';
 
-const strikes = (count: number): Step[] =>
-  Array.from({ length: count }, (_, k) => ({
-    kind: 'strike',
-    value: k,
-    factor: 1,
-    multiplier: k,
-  }));
+// Steps are opaque to the player; pacing arrives with load().
+const strikes = (count: number): { value: number }[] =>
+  Array.from({ length: count }, (_, k) => ({ value: k }));
+
+const delay = (): number => 380;
+
+const load = (player: Player, steps: readonly unknown[]): void => player.load(steps, delay);
 
 describe('Player', () => {
   beforeEach(() => {
@@ -21,9 +20,9 @@ describe('Player', () => {
 
   it('plays every step to completion', () => {
     const player = new Player();
-    const seen: Step[] = [];
-    player.onStep = (s) => seen.push(s);
-    player.load(strikes(5));
+    const seen: unknown[] = [];
+    player.onStep = (s): number => seen.push(s);
+    load(player, strikes(5));
     player.play();
     vi.runAllTimers();
     expect(seen).toHaveLength(5);
@@ -34,13 +33,13 @@ describe('Player', () => {
     const player = new Player();
     let applied = 0;
     player.onStep = () => applied++;
-    player.load(strikes(50));
+    load(player, strikes(50));
     player.play();
     vi.advanceTimersByTime(500);
     const beforeReload = applied;
     expect(player.state).toBe('running');
 
-    player.load(strikes(3));
+    load(player, strikes(3));
     vi.runAllTimers();
     // nothing from the first run may land after the reload
     expect(applied).toBe(beforeReload);
@@ -55,7 +54,7 @@ describe('Player', () => {
     const player = new Player();
     let applied = 0;
     player.onStep = () => applied++;
-    player.load(strikes(10));
+    load(player, strikes(10));
     player.play();
     vi.advanceTimersByTime(200);
     player.pause();
@@ -71,7 +70,7 @@ describe('Player', () => {
     const player = new Player();
     let applied = 0;
     player.onStep = () => applied++;
-    player.load(strikes(10));
+    load(player, strikes(10));
     player.stepOnce();
     expect(applied).toBe(1);
     expect(player.state).toBe('paused');
@@ -83,7 +82,7 @@ describe('Player', () => {
     const player = new Player();
     let applied = 0;
     player.onStep = () => applied++;
-    player.load(strikes(2));
+    load(player, strikes(2));
     player.stepOnce();
     player.stepOnce();
     expect(player.state).toBe('done');

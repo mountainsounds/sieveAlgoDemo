@@ -69,6 +69,15 @@ export class AlgoPicker {
     this.btn.addEventListener('blur', () => this.close());
   }
 
+  /** Sync the selection from outside (routing) without firing onSelect. */
+  select(id: string): void {
+    const index = this.ids.indexOf(id);
+    if (index < 0 || index === this.selected) return;
+    this.selected = index;
+    this.active = index;
+    this.syncSelected();
+  }
+
   private onKeydown(e: KeyboardEvent): void {
     const open = this.isOpen;
     switch (e.key) {
