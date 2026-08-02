@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Interactive visualization of the Sieve of Eratosthenes." />
+    <meta name="theme-color" content="#012b2d" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap"
+      rel="stylesheet"
+    />
+    <title>Sieve of Eratosthenes</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="title-block">
+        <p class="eyebrow">Algorithm visualization</p>
+        <h1>Sieve of Eratosthenes</h1>
+        <p class="summary">
+          Counts the primes below n by striking out the multiples of each prime.
+        </p>
+      </div>
+      <nav class="header-links" aria-label="References">
+        <a
+          href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes"
+          target="_blank"
+          rel="noreferrer"
+          >Wikipedia</a
+        >
+        <a
+          href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes#Algorithmic_complexity"
+          target="_blank"
+          rel="noreferrer"
+          >O(n log log n)</a
+        >
+        <a href="https://leetcode.com/problems/count-primes/" target="_blank" rel="noreferrer"
+          >LeetCode 204</a
+        >
+      </nav>
+    </header>
+
+    <main class="layout">
+      <section class="code-pane" aria-label="Code">
+        <div class="panel code-panel">
+          <p class="panel-label" id="codeLabel">countPrimes.js</p>
+          <pre class="code-pre"><code id="codeBlock"></code></pre>
+        </div>
+      </section>
+
+      <section class="viz-pane" aria-label="Visualization">
+        <form class="panel controls" id="controls">
+          <div class="field">
+            <label class="panel-label" for="numInput">n (2–120)</label>
+            <input
+              id="numInput"
+              name="n"
+              type="number"
+              inputmode="numeric"
+              min="2"
+              max="120"
+              step="1"
+              value="30"
+            />
+          </div>
+          <div class="buttons">
+            <button type="submit" id="runBtn" class="btn primary">Run</button>
+            <button type="button" id="stepBtn" class="btn">Step</button>
+            <button type="button" id="resetBtn" class="btn">Reset</button>
+            <label class="speed">
+              <span class="panel-label">Speed</span>
+              <select id="speedSelect">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+              </select>
+            </label>
+          </div>
+          <p class="status" id="status" role="status" aria-live="polite">Pick n and press Run.</p>
+        </form>
+
+        <div id="grid" class="grid" aria-hidden="true"></div>
+        <p class="count-line"><span id="countChip" class="count-chip" hidden></span></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Zack Sawyer · 2021, rebuilt 2026 ·
+        <a href="https://github.com/mountainsounds/sieveAlgoDemo" target="_blank" rel="noreferrer"
+          >Source</a
+        >
+        ·
+        <a href="https://mtnsounds.com" target="_blank" rel="noreferrer">mtnsounds.com</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
