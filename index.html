@@ -1,67 +1,143 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
-  <link href="libraries/prism-night-owl.css" rel="stylesheet" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Set the theme before first paint. Kept inline so there is no flash.
+      (function () {
+        var theme = null;
+        try {
+          theme = localStorage.getItem('algo-theme');
+        } catch (e) {
+          /* storage unavailable */
+        }
+        if (theme !== 'signal' && theme !== 'notebook') {
+          theme =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'notebook'
+              : 'signal';
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <meta
+      name="description"
+      content="Animated algorithm walkthroughs. 01: Sieve of Eratosthenes."
+    />
+    <meta name="theme-color" content="#0a0c10" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>Sieve of Eratosthenes · algo.</title>
+  </head>
+  <body>
+    <header class="top-bar">
+      <a class="wordmark" href="./">algo<span class="wordmark-dot">.</span></a>
+      <div class="top-actions">
+        <label class="visually-hidden" for="algoPicker">Algorithm</label>
+        <select id="algoPicker" class="algo-picker">
+          <option value="sieve-of-eratosthenes">01 · Sieve of Eratosthenes</option>
+        </select>
+        <fieldset class="theme-switch">
+          <legend class="visually-hidden">Theme</legend>
+          <label class="switch-opt">
+            <input type="radio" name="theme" value="signal" />
+            <span>Signal</span>
+          </label>
+          <label class="switch-opt">
+            <input type="radio" name="theme" value="notebook" />
+            <span>Notebook</span>
+          </label>
+        </fieldset>
+      </div>
+    </header>
 
-  <title>Sieve of Eratosthenes</title>
-</head>
-<body>
+    <main class="page">
+      <section class="algo-head">
+        <p class="eyebrow" id="algoIndex">algorithm 01</p>
+        <h1 id="algoTitle">Sieve of Eratosthenes</h1>
+        <p class="summary" id="algoSummary">
+          Counts the primes below n by striking out the multiples of each prime.
+        </p>
+        <nav class="refs" aria-label="References">
+          <a
+            href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes"
+            target="_blank"
+            rel="noreferrer"
+            >Wikipedia</a
+          >
+          <a
+            href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes#Algorithmic_complexity"
+            target="_blank"
+            rel="noreferrer"
+            >O(n log log n)</a
+          >
+          <a href="https://leetcode.com/problems/count-primes/" target="_blank" rel="noreferrer"
+            >LeetCode 204</a
+          >
+        </nav>
+      </section>
 
-  <nav>
-    <ul class="menu">
-        <li class="logo"><a href="#">Sieve of Eratosthenes</a></li>
-        <li class="item"><a target="_blank" href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes">Wikipedia</a></li>
-        <li class="item has-submenu"><a href="#">Time Complexity</a>
-          <ul class="submenu">
-            <li class="subitem"><a target="_blank" href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes#Algorithmic_complexity">O(√nloglogn)</a></li>
-            <li class="subitem"><a  target="_blank" href="http://www.cs.umd.edu/~gasarch/BLOGPAPERS/sump.pdf">Mathematical proof</a></li>
+      <div class="layout">
+        <section class="code-pane" aria-label="Code">
+          <div class="panel code-panel">
+            <p class="panel-label" id="codeLabel">countPrimes.js</p>
+            <pre class="code-pre"><code id="codeBlock"></code></pre>
+          </div>
+        </section>
 
-        </ul></li>
-        <li class="item has-submenu ">
-            <a tabindex="0">Toy Problems</a>
-            <ul class="submenu">
-                <li class="subitem"><a  target="_blank" href="https://www.codewars.com/kata/577ade22311a24f0b70004a3">Codewars: Sieve</a></li>
-                <li class="subitem"><a target="_blank" href="https://leetcode.com/problems/count-primes/">LC: Count Primes</a></li>
-            </ul>
-        </li>
-        <li class="toggle"><a href="#"><i class="fas fa-bars"></i></a></li>
-    </ul>
-</nav>
-
-  <main id="demonstration">
-    <section id="userInterface">
-        <div class="form">
-          <form class="login-form">
-            <input required id='numInput' type="number" placeholder="Enter a number" min="2" max="100"/>
-            <button id="demoBtn"> Initiate </button>
+        <section class="viz-pane" aria-label="Visualization">
+          <form class="panel controls" id="controls">
+            <div class="field">
+              <label class="panel-label" for="numInput">n (2–120)</label>
+              <input
+                id="numInput"
+                name="n"
+                type="number"
+                inputmode="numeric"
+                min="2"
+                max="120"
+                step="1"
+                value="30"
+              />
+            </div>
+            <div class="buttons">
+              <button type="submit" id="runBtn" class="btn primary">Run</button>
+              <button type="button" id="stepBtn" class="btn">Step</button>
+              <button type="button" id="resetBtn" class="btn">Reset</button>
+            </div>
+            <label class="speed">
+              <span class="panel-label">Speed</span>
+              <select id="speedSelect">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+              </select>
+            </label>
           </form>
-        </div>
-    </section>
 
-    <section id="demoRender">
-      <div id="codeModel">
-        <pre id="codeContainer" class=" language-javascript" tabindex="0"><code>
-          const countPrimes = (n) => {
+          <div id="grid" class="grid" aria-hidden="true"></div>
 
-          }
-        </code></pre>
+          <div class="readout">
+            <p class="status" id="status" role="status" aria-live="polite">Pick n and press Run.</p>
+            <!-- Repeats what the status line announces; hidden from AT. -->
+            <span id="countChip" class="count-chip" aria-hidden="true" hidden></span>
+          </div>
+        </section>
       </div>
-      <div id="visualModel">
-        <div id="counter"></div>
-        <div id="squareWrapper"></div>
-      </div>
-    </section>
+    </main>
 
-  </main>
+    <footer class="site-footer">
+      <p>
+        Zack Sawyer · 2021, rebuilt 2026 ·
+        <a href="https://github.com/mountainsounds/sieveAlgoDemo" target="_blank" rel="noreferrer"
+          >Source</a
+        >
+        ·
+        <a href="https://mtnsounds.com" target="_blank" rel="noreferrer">mtnsounds.com</a>
+      </p>
+    </footer>
 
-  <script src="libraries/prism.js"></script>
-  <script src="libraries/prism-normalize-whitespace.js"></script>
-  <script src="scripts/modules/demo_codes.js"></script>
-  <script src="scripts/app.js"></script>
-</body>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
