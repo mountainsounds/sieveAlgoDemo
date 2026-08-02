@@ -23,7 +23,7 @@
     </script>
     <meta
       name="description"
-      content="Animated algorithm walkthroughs. 01: Sieve of Eratosthenes."
+      content="Animated algorithm walkthroughs. 01: Sieve of Eratosthenes. 02: Binary Search."
     />
     <meta name="theme-color" content="#0a0c10" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
@@ -72,7 +72,7 @@
         <p class="summary" id="algoSummary">
           Counts the primes below n by striking out the multiples of each prime.
         </p>
-        <nav class="refs" aria-label="References">
+        <nav class="refs" id="algoRefs" aria-label="References">
           <a
             href="https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes"
             target="_blank"
@@ -101,18 +101,20 @@
 
         <section class="viz-pane" aria-label="Visualization">
           <form class="panel controls" id="controls">
-            <div class="field">
-              <label class="panel-label" for="numInput">n (2–120)</label>
-              <input
-                id="numInput"
-                name="n"
-                type="number"
-                inputmode="numeric"
-                min="2"
-                max="120"
-                step="1"
-                value="30"
-              />
+            <div class="control-fields" id="controlFields">
+              <div class="field">
+                <label class="panel-label" for="ctl-n">n (2–120)</label>
+                <input
+                  id="ctl-n"
+                  name="n"
+                  type="number"
+                  inputmode="numeric"
+                  min="2"
+                  max="120"
+                  step="1"
+                  value="30"
+                />
+              </div>
             </div>
             <div class="buttons">
               <button type="submit" id="runBtn" class="btn primary">Run</button>
@@ -130,7 +132,7 @@
             </label>
           </form>
 
-          <div id="grid" class="grid" aria-hidden="true"></div>
+          <div id="stage" aria-hidden="true"></div>
 
           <div class="readout">
             <p class="status" id="status" role="status" aria-live="polite">Pick n and press Run.</p>

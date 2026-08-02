@@ -1,45 +1,23 @@
-import type { Step } from '../algorithms/types';
-
 export type PlayerState = 'idle' | 'running' | 'paused' | 'done';
 
-/** Base delay after a step, in ms at 1x speed. */
-function delayFor(step: Step): number {
-  switch (step.kind) {
-    case 'init':
-      return 900;
-    case 'strike-units':
-      return 1000;
-    case 'prime-found':
-      return 1100;
-    case 'composite-skip':
-      return 700;
-    case 'strike':
-      return 380;
-    case 'sweep-done':
-      return 1300;
-    case 'count-visit':
-      return step.prime ? 480 : 160;
-    case 'done':
-      return 0;
-  }
-}
-
 /**
- * Plays a precomputed step list on a single timer chain.
+ * Plays a precomputed step list on a single timer chain. Steps are opaque —
+ * the delay for each one comes from the algorithm via `load`.
  *
  * Every scheduled tick captures the epoch at schedule time and bails if a
  * load() has bumped it since, so a reset or a new run can never race a
  * previous run — the failure mode of the 2021 version.
  */
 export class Player {
-  private steps: Step[] = [];
+  private steps: readonly unknown[] = [];
+  private delayFor: (step: unknown) => number = () => 0;
   private pos = 0;
   private epoch = 0;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private _state: PlayerState = 'idle';
 
   speed = 1;
-  onStep: (step: Step) => void = () => undefined;
+  onStep: (step: unknown) => void = () => undefined;
   onState: (state: PlayerState) => void = () => undefined;
 
   get state(): PlayerState {
@@ -52,10 +30,11 @@ export class Player {
     this.onState(next);
   }
 
-  load(steps: Step[]): void {
+  load(steps: readonly unknown[], delayFor: (step: unknown) => number): void {
     this.epoch++;
     this.clearTimer();
     this.steps = steps;
+    this.delayFor = delayFor;
     this.pos = 0;
     this.setState('idle');
   }
@@ -86,7 +65,7 @@ export class Player {
     const step = this.steps[this.pos];
     if (step === undefined) return;
     if (this.advance()) return;
-    const wait = Math.max(16, delayFor(step) / this.speed);
+    const wait = Math.max(16, this.delayFor(step) / this.speed);
     this.timer = setTimeout(() => this.tick(epoch), wait);
   }
 
