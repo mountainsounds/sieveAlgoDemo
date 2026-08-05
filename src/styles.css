@@ -126,6 +126,51 @@
   --tag-tilt: 0deg;
   --win-ink: rgba(var(--accent-rgb), 0.65);
 
+  /* Insertion sort deck: unlit columns that light up as the run absorbs them. */
+  --col-bg: linear-gradient(
+    180deg,
+    rgba(232, 238, 246, 0.26),
+    rgba(232, 238, 246, 0.07) 62%,
+    rgba(232, 238, 246, 0.12)
+  );
+  --col-outline: none;
+  --col-radius: 2px 2px 0 0;
+  --col-shadow: inset 0 1px 0 rgba(232, 238, 246, 0.32);
+  --col-sorted-bg: linear-gradient(
+    180deg,
+    rgba(var(--accent-rgb), 0.55),
+    rgba(var(--accent-rgb), 0.14) 62%,
+    rgba(var(--accent-rgb), 0.22)
+  );
+  --col-sorted-shadow:
+    inset 0 1px 0 rgba(var(--accent-rgb), 0.7), 0 0 12px rgba(var(--accent-rgb), 0.16);
+  --col-key-bg: linear-gradient(180deg, var(--accent-strong), rgba(var(--accent-rgb), 0.5));
+  --col-key-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5), 0 8px 16px rgba(0, 0, 0, 0.5);
+  --col-key-outline: none;
+  --col-cmp-cap: inset 0 3px 0 var(--accent-strong);
+  --col-cmp-shadow: 0 0 14px rgba(var(--accent-rgb), 0.3);
+  --band-wash: linear-gradient(180deg, transparent 52%, rgba(var(--accent-rgb), 0.08));
+  --band-rail-ink: rgba(var(--accent-rgb), 0.8);
+  --band-rail-glow: 0 0 10px rgba(var(--accent-rgb), 0.45);
+  --seam-line: linear-gradient(
+    180deg,
+    transparent,
+    rgba(var(--accent-rgb), 0.85) 14%,
+    rgba(var(--accent-rgb), 0.85) 86%,
+    transparent
+  );
+  --seam-glow: 0 0 10px rgba(var(--accent-rgb), 0.45);
+  --hole-line: 1px dashed rgba(var(--accent-rgb), 0.55);
+  --hole-bg: rgba(var(--accent-rgb), 0.05);
+  --guide-line: linear-gradient(90deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-rgb), 0.9));
+  --guide-glow: 0 0 8px rgba(var(--accent-rgb), 0.45);
+  --guide-stop-line: linear-gradient(90deg, var(--accent-strong), var(--accent-strong));
+  --guide-tick: var(--accent-strong);
+  --arrow-ink: transparent;
+  --smear-glow: rgba(var(--accent-rgb), 0.5);
+  --lift: 2.9rem;
+  --socket: 2.4rem;
+
   /* Motion personality: springy. */
   --ease-move: cubic-bezier(0.3, 1.45, 0.5, 1);
   --dur-move: 300ms;
@@ -241,6 +286,42 @@
   --tag-tilt: -1.2deg;
   --win-ink: rgba(34, 48, 77, 0.62);
 
+  /* Insertion sort deck: graphite columns inked in as the run absorbs them. */
+  --col-bg: repeating-linear-gradient(-48deg, rgba(34, 48, 77, 0.3) 0 1px, transparent 1px 3.5px);
+  --col-outline: 1px solid rgba(34, 48, 77, 0.45);
+  --col-radius: 1px 1px 0 0;
+  --col-shadow: none;
+  --col-sorted-bg: repeating-linear-gradient(
+    -48deg,
+    rgba(var(--accent-rgb), 0.7) 0 1px,
+    transparent 1px 3px
+  );
+  --col-sorted-shadow: none;
+  --col-key-bg: repeating-linear-gradient(
+    -48deg,
+    rgba(var(--accent-rgb), 0.85) 0 1.5px,
+    transparent 1.5px 3px
+  );
+  --col-key-shadow: 2px 4px 0 rgba(34, 48, 77, 0.2);
+  --col-key-outline: 1.5px solid var(--accent-strong);
+  --col-cmp-cap: inset 0 3px 0 var(--pencil);
+  --col-cmp-shadow: none;
+  --band-wash: linear-gradient(180deg, transparent 58%, rgba(var(--accent-rgb), 0.07));
+  --band-rail-ink: rgba(var(--accent-rgb), 0.75);
+  --band-rail-glow: none;
+  --seam-line: repeating-linear-gradient(180deg, var(--pencil) 0 6px, transparent 6px 11px);
+  --seam-glow: none;
+  --hole-line: 1px dashed rgba(34, 48, 77, 0.55);
+  --hole-bg: transparent;
+  --guide-line: repeating-linear-gradient(90deg, var(--pencil) 0 5px, transparent 5px 9px);
+  --guide-glow: none;
+  --guide-stop-line: linear-gradient(90deg, var(--pencil), var(--pencil));
+  --guide-tick: var(--pencil);
+  --arrow-ink: var(--pencil);
+  --smear-glow: transparent;
+  --lift: 2.9rem;
+  --socket: 2.4rem;
+
   /* Motion personality: drafting table — quick, exact. */
   --ease-move: cubic-bezier(0.3, 1, 0.4, 1);
   --dur-move: 140ms;
@@ -270,6 +351,22 @@
   --accent-contrast: #f7faf5;
   --accent-rgb: 30, 122, 78;
   --code-keyword: #1e7a4e;
+}
+
+:root[data-theme='signal'][data-algo='insertion-sort'] {
+  --accent: #ff7ad9;
+  --accent-strong: #ffb0e8;
+  --accent-contrast: #2a0620;
+  --accent-rgb: 255, 122, 217;
+  --code-keyword: #ff8ee0;
+}
+
+:root[data-theme='notebook'][data-algo='insertion-sort'] {
+  --accent: #a3246f;
+  --accent-strong: #7d1a55;
+  --accent-contrast: #fdf7fa;
+  --accent-rgb: 163, 36, 111;
+  --code-keyword: #a3246f;
 }
 
 * {
@@ -715,6 +812,7 @@ h1 {
 }
 
 .field input,
+.field select,
 .speed select {
   font-family: var(--font-mono);
   font-size: 0.95rem;
@@ -727,6 +825,7 @@ h1 {
 }
 
 [data-theme='notebook'] .field input,
+[data-theme='notebook'] .field select,
 [data-theme='notebook'] .speed select {
   background-color: rgba(255, 255, 255, 0.55);
   border-radius: 5px;
@@ -741,6 +840,7 @@ h1 {
   border-color: var(--accent);
 }
 
+.field select,
 .speed select {
   appearance: none;
   cursor: pointer;
@@ -750,10 +850,12 @@ h1 {
   background-size: 0.55rem;
 }
 
+[data-theme='signal'] .field select,
 [data-theme='signal'] .speed select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a8b3c2' stroke-width='1.5'/%3E%3C/svg%3E");
 }
 
+[data-theme='notebook'] .field select,
 [data-theme='notebook'] .speed select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23566a94' stroke-width='1.5'/%3E%3C/svg%3E");
 }
@@ -1370,6 +1472,281 @@ h1 {
   display: none;
 }
 
+/* ---------- Insertion sort deck ----------
+   The row actually reorders, so the marks are all about movement: the key
+   lifts out of the deck and floats over the dashed hole it left behind, a
+   short guide at the key's height reaches over the column under test, a
+   shifted column slides one slot right, and the band plus its seam carry the
+   sorted-so-far boundary. Columns are seated by percentage of the row, so a
+   resize needs no work. Notebook's arrow marks are rendered in both themes and
+   hidden in Signal, so a mid-run theme switch never replays a draw. */
+
+.sort {
+  position: relative;
+  margin-top: 1.25rem;
+}
+
+.deck {
+  /* Headroom for the lifted key and its tag. */
+  padding-top: 4.6rem;
+}
+
+.row {
+  position: relative;
+  height: clamp(170px, 23vh, 232px);
+}
+
+.row::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.col {
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+  width: calc(100% / var(--n, 10) - 4px);
+  height: calc(var(--h, 0) * 1%);
+  background: var(--col-bg);
+  border: var(--col-outline);
+  border-bottom: none;
+  border-radius: var(--col-radius);
+  box-shadow: var(--col-shadow);
+  transform-origin: bottom;
+  animation: bar-rise var(--dur-pop) var(--ease-pop) both;
+  animation-delay: var(--rise-delay, 0ms);
+  transition:
+    left var(--dur-move) var(--ease-move),
+    bottom var(--dur-move) var(--ease-move),
+    box-shadow 0.2s ease;
+}
+
+/* Everything the run has absorbed takes the accent; the rest stays unlit. */
+.col.sorted {
+  background: var(--col-sorted-bg);
+  box-shadow: var(--col-sorted-shadow);
+}
+
+/* The column being measured against the key wears a cap. */
+.col.cmp {
+  box-shadow: var(--col-cmp-cap), var(--col-cmp-shadow);
+}
+
+/* The key leaves the row: lifted, lit, and over everything it passes. */
+.col.key {
+  bottom: var(--lift);
+  z-index: 5;
+  background: var(--col-key-bg);
+  border: var(--col-key-outline);
+  border-bottom: none;
+  box-shadow: var(--col-key-shadow);
+}
+
+.col.placed {
+  animation: prime-pop var(--dur-pop) var(--ease-pop);
+}
+
+/* Signal smears a sliding column in the direction it came from; Notebook
+   flicks a pencil arrow instead. Both bindings are theme-independent and the
+   idle state of each is a no-op, so a theme flip can't replay them. */
+.col.shifting {
+  animation: shift-smear var(--dur-move) var(--ease-move);
+}
+
+@keyframes shift-smear {
+  0% {
+    box-shadow: -18px 0 22px -8px var(--smear-glow);
+  }
+  60% {
+    box-shadow: -6px 0 14px -6px var(--smear-glow);
+  }
+}
+
+.col-arrow {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  width: 22px;
+  height: 12px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.col-arrow path {
+  fill: none;
+  stroke: var(--arrow-ink);
+  stroke-width: 1.7px;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+}
+
+[data-theme='signal'] .col-arrow {
+  visibility: hidden;
+}
+
+.col.shifting .col-arrow path {
+  animation: arrow-flick var(--dur-strike) var(--ease-draw);
+}
+
+@keyframes arrow-flick {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  55% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* The empty socket the key came out of — and the one it is heading back into.
+   A short stub, not a silhouette: the gap is a slot, and its height would only
+   compete with the key floating right above it. */
+.hole {
+  position: absolute;
+  bottom: 0;
+  z-index: 1;
+  width: calc(100% / var(--n, 10) - 4px);
+  height: var(--socket);
+  background: var(--hole-bg);
+  border: var(--hole-line);
+  border-bottom: none;
+  border-radius: var(--col-radius);
+  pointer-events: none;
+  transition: left var(--dur-move) var(--ease-move);
+}
+
+/* The key's height, laid across the column under test — the comparison drawn
+   as something you can read straight off the picture. It sits at the key's
+   true height, not its lifted one, so above the line really does mean bigger. */
+.guide {
+  position: absolute;
+  z-index: 4;
+  height: 3px;
+  margin-bottom: -1px;
+  width: calc(100% / var(--n, 10) - 4px);
+  background: var(--guide-line);
+  box-shadow: var(--guide-glow);
+  pointer-events: none;
+  transition:
+    left var(--dur-move) var(--ease-move),
+    bottom var(--dur-move) var(--ease-move);
+}
+
+/* End tick, so the line reads as a gauge set down on the column. */
+.guide::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: -4px;
+  width: 3px;
+  height: 11px;
+  background: var(--guide-tick);
+}
+
+.guide.stop {
+  background: var(--guide-stop-line);
+}
+
+.key-tag {
+  position: absolute;
+  top: -3.9rem;
+  left: clamp(3rem, var(--x, 50%), calc(100% - 3rem));
+  transform: translateX(-50%) rotate(var(--tag-tilt));
+  z-index: 6;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text);
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-left: 2px solid var(--accent);
+  border-radius: 5px;
+  padding: 0.22rem 0.5rem;
+  white-space: nowrap;
+  transition: left var(--dur-move) var(--ease-move);
+}
+
+.band {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  background: var(--band-wash);
+  pointer-events: none;
+  transition: width var(--dur-move) var(--ease-move);
+}
+
+/* The rail runs under the baseline, where no column can cover it — the sorted
+   run stays underlined the whole way. */
+.band::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 3px;
+  background: var(--band-rail-ink);
+  box-shadow: var(--band-rail-glow);
+}
+
+.seam {
+  position: absolute;
+  top: 0;
+  bottom: -6px;
+  z-index: 1;
+  width: 2px;
+  background: var(--seam-line);
+  box-shadow: var(--seam-glow);
+  pointer-events: none;
+  transition: left var(--dur-move) var(--ease-move);
+}
+
+/* Names the two sides of the seam, so the boundary never needs explaining. */
+.legend {
+  position: relative;
+  height: 1.9rem;
+  padding-top: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  visibility: hidden;
+}
+
+.legend.on {
+  visibility: visible;
+}
+
+.legend-lo,
+.legend-hi {
+  position: absolute;
+}
+
+.legend-lo {
+  left: 0;
+  color: var(--accent);
+}
+
+.legend-hi {
+  right: 0;
+}
+
+.legend.done .legend-hi {
+  visibility: hidden;
+}
+
 /* ---------- Readout ---------- */
 
 .readout {
@@ -1469,6 +1846,23 @@ h1 {
   .plot {
     height: clamp(150px, 26vh, 210px);
   }
+
+  .sort {
+    --lift: 2.4rem;
+    --socket: 2rem;
+  }
+
+  .deck {
+    padding-top: 4.4rem;
+  }
+
+  .row {
+    height: clamp(150px, 26vh, 210px);
+  }
+
+  .key-tag {
+    top: -3.4rem;
+  }
 }
 
 @media (max-width: 560px) {
@@ -1502,7 +1896,13 @@ h1 {
   .probe-tag,
   .probe-caret,
   .win,
-  .bar-scratch {
+  .bar-scratch,
+  .col,
+  .hole,
+  .guide,
+  .band,
+  .seam,
+  .key-tag {
     transition: none;
   }
 
@@ -1518,7 +1918,11 @@ h1 {
   .bar.dead .bar-scratch path,
   .bar.found .bar-ring path,
   .level.on::before,
-  .level.on .level-pencil {
+  .level.on .level-pencil,
+  .col,
+  .col.placed,
+  .col.shifting,
+  .col.shifting .col-arrow path {
     animation: none;
   }
 

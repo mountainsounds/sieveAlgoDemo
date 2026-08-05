@@ -1,4 +1,5 @@
 import { defineAlgorithm, type AlgorithmDef, type ControlValues } from './types';
+import { mulberry32 } from './random';
 
 /** One visual moment in a binary search run. */
 export type SearchStep =
@@ -19,17 +20,6 @@ export type SearchStep =
 
 export const SIZE = { min: 4, max: 48, default: 24 };
 export const TARGET = { min: 0, max: 99 };
-
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 /**
  * The array being searched: `size` distinct values in 2..99, sorted. A jittered
