@@ -12,7 +12,39 @@ import {
 const sizes = Array.from({ length: SIZE.max - SIZE.min + 1 }, (_, k) => SIZE.min + k);
 const targets = Array.from({ length: TARGET.max - TARGET.min + 1 }, (_, k) => TARGET.min + k);
 
+/**
+ * The generator binary-search.ts carried privately before random.ts existed.
+ * Kept here so the shared extraction can never quietly move the demo arrays.
+ */
+function legacySortedValues(size: number): number[] {
+  let a = (size * 0x9e3779b9 + 7) >>> 0;
+  const rand = (): number => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const gap = (TARGET.max - 2) / size;
+  const out: number[] = [];
+  let prev = 1;
+  for (let i = 0; i < size; i++) {
+    const center = 2 + (i + 0.5) * gap;
+    const jittered = Math.round(center + (rand() - 0.5) * gap * 0.9);
+    const v = Math.min(TARGET.max, Math.max(prev + 1, jittered));
+    out.push(v);
+    prev = v;
+  }
+  return out;
+}
+
 describe('sortedValues', () => {
+  it('still produces the arrays it shipped with', () => {
+    for (const size of sizes) {
+      expect(sortedValues(size), `size=${size}`).toEqual(legacySortedValues(size));
+    }
+  });
+
   it('is deterministic, strictly increasing, and in range for every size', () => {
     for (const size of sizes) {
       const values = sortedValues(size);

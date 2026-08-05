@@ -15,6 +15,26 @@ export interface NumberControl {
   default: number;
 }
 
+/** One alternative in a choice control; `value` is what buildSteps receives. */
+export interface ChoiceOption {
+  value: number;
+  label: string;
+}
+
+/** A pick-one field, rendered by the shell as a select. */
+export interface ChoiceControl {
+  id: string;
+  label: string;
+  options: readonly ChoiceOption[];
+  default: number;
+}
+
+export type Control = NumberControl | ChoiceControl;
+
+export function isChoice(control: Control): control is ChoiceControl {
+  return 'options' in control;
+}
+
 /** Current value of every control, keyed by control id. */
 export type ControlValues = Readonly<Record<string, number>>;
 
@@ -45,7 +65,7 @@ export interface AlgorithmSpec<S> {
   /** Status line while idle, e.g. "Pick n and press Run." */
   idleText: string;
   refs: readonly Ref[];
-  controls: readonly NumberControl[];
+  controls: readonly Control[];
   buildSteps(values: ControlValues): readonly S[];
   /** Base delay after a step, in ms at 1x speed. */
   delayFor(step: S): number;

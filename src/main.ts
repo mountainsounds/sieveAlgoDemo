@@ -5,7 +5,14 @@ import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import './styles.css';
 
-import type { AlgorithmView, ControlValues, NumberControl } from './algorithms/types';
+import type {
+  AlgorithmView,
+  ChoiceControl,
+  Control,
+  ControlValues,
+  NumberControl,
+} from './algorithms/types';
+import { isChoice } from './algorithms/types';
 import { registry, type AlgorithmEntry } from './registry';
 import { Player } from './engine/player';
 import { CodePanel } from './ui/code-panel';
@@ -53,51 +60,90 @@ function entryForPath(pathname: string): AlgorithmEntry | null {
 
 let entry = mustGet(registry[0], 'no algorithms registered');
 let view: AlgorithmView | null = null;
-let fields: { spec: NumberControl; input: HTMLInputElement }[] = [];
 
-function renderControls(entryFields: readonly NumberControl[]): void {
-  controlFields.textContent = '';
-  fields = entryFields.map((spec) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'field';
-    const label = document.createElement('label');
-    label.className = 'panel-label';
-    label.htmlFor = `ctl-${spec.id}`;
-    label.textContent = `${spec.label} (${spec.min}–${spec.max})`;
-    const input = document.createElement('input');
-    input.id = `ctl-${spec.id}`;
-    input.name = spec.id;
-    input.type = 'number';
-    input.inputMode = 'numeric';
-    input.min = String(spec.min);
-    input.max = String(spec.max);
-    input.step = '1';
-    input.value = String(spec.default);
-    input.addEventListener('input', () => onFieldInput(spec, input));
-    wrap.append(label, input);
-    controlFields.appendChild(wrap);
-    return { spec, input };
-  });
+/** A rendered control: the spec it came from and the element holding its value. */
+type Field =
+  | { kind: 'number'; spec: NumberControl; input: HTMLInputElement }
+  | { kind: 'choice'; spec: ChoiceControl; input: HTMLSelectElement };
+
+let fields: Field[] = [];
+
+function fieldLabel(spec: Control, text: string): HTMLLabelElement {
+  const label = document.createElement('label');
+  label.className = 'panel-label';
+  label.htmlFor = `ctl-${spec.id}`;
+  label.textContent = text;
+  return label;
 }
 
-function parseField(spec: NumberControl, input: HTMLInputElement): number | null {
-  const raw = input.value.trim();
-  const value = Number(raw);
-  if (raw === '' || !Number.isInteger(value) || value < spec.min || value > spec.max) return null;
-  return value;
+function numberField(spec: NumberControl): Field {
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  const input = document.createElement('input');
+  input.id = `ctl-${spec.id}`;
+  input.name = spec.id;
+  input.type = 'number';
+  input.inputMode = 'numeric';
+  input.min = String(spec.min);
+  input.max = String(spec.max);
+  input.step = '1';
+  input.value = String(spec.default);
+  const field: Field = { kind: 'number', spec, input };
+  input.addEventListener('input', () => onFieldInput(field));
+  wrap.append(fieldLabel(spec, `${spec.label} (${spec.min}–${spec.max})`), input);
+  controlFields.appendChild(wrap);
+  return field;
+}
+
+function choiceField(spec: ChoiceControl): Field {
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  const input = document.createElement('select');
+  input.id = `ctl-${spec.id}`;
+  input.name = spec.id;
+  for (const option of spec.options) {
+    const node = document.createElement('option');
+    node.value = String(option.value);
+    node.textContent = option.label;
+    node.selected = option.value === spec.default;
+    input.appendChild(node);
+  }
+  const field: Field = { kind: 'choice', spec, input };
+  input.addEventListener('change', () => onFieldInput(field));
+  wrap.append(fieldLabel(spec, spec.label), input);
+  controlFields.appendChild(wrap);
+  return field;
+}
+
+function renderControls(specs: readonly Control[]): void {
+  controlFields.textContent = '';
+  fields = specs.map((spec) => (isChoice(spec) ? choiceField(spec) : numberField(spec)));
+}
+
+function parseField(field: Field): number | null {
+  const value = Number(field.input.value.trim());
+  if (field.kind === 'choice') {
+    return field.spec.options.some((option) => option.value === value) ? value : null;
+  }
+  const { spec, input } = field;
+  if (input.value.trim() === '' || !Number.isInteger(value)) return null;
+  return value < spec.min || value > spec.max ? null : value;
 }
 
 /** Every control's value, or null after reporting the first invalid one. */
 function readInputs(): ControlValues | null {
   const values: Record<string, number> = {};
-  for (const { spec, input } of fields) {
-    const value = parseField(spec, input);
+  for (const field of fields) {
+    const value = parseField(field);
     if (value === null) {
-      status.textContent = `${spec.label} must be a whole number from ${spec.min} to ${spec.max}.`;
-      input.focus();
+      status.textContent =
+        field.kind === 'number'
+          ? `${field.spec.label} must be a whole number from ${field.spec.min} to ${field.spec.max}.`
+          : `Pick ${field.spec.label} from the list.`;
+      field.input.focus();
       return null;
     }
-    values[spec.id] = value;
+    values[field.spec.id] = value;
   }
   return values;
 }
@@ -105,18 +151,18 @@ function readInputs(): ControlValues | null {
 /** Values for the idle preview: each field if valid, else its default. */
 function previewValues(): ControlValues {
   const values: Record<string, number> = {};
-  for (const { spec, input } of fields) {
-    values[spec.id] = parseField(spec, input) ?? spec.default;
+  for (const field of fields) {
+    values[field.spec.id] = parseField(field) ?? field.spec.default;
   }
   return values;
 }
 
-function onFieldInput(spec: NumberControl, input: HTMLInputElement): void {
+function onFieldInput(field: Field): void {
   if (player.state !== 'idle') {
-    status.textContent = `New ${spec.label} applies on the next Run (Reset first).`;
+    status.textContent = `New ${field.spec.label} applies on the next Run (Reset first).`;
     return;
   }
-  if (parseField(spec, input) !== null) view?.preview(previewValues());
+  if (parseField(field) !== null) view?.preview(previewValues());
 }
 
 function hideChip(): void {
