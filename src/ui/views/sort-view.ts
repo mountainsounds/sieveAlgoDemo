@@ -1,5 +1,6 @@
 import type { AlgorithmView, ControlValues } from '../../algorithms/types';
-import { arrangeValues, ORDER, SIZE, type SortStep } from '../../algorithms/insertion-sort';
+import { arrangeValues, ORDER } from '../../algorithms/arrange';
+import { SIZE, type SortStep } from '../../algorithms/insertion-sort';
 
 /**
  * Renders insertion sort as a deck of columns that actually reorders. Where

@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { arrangeValues, orderLabel, ORDER, ORDER_OPTIONS } from '../src/algorithms/arrange';
 import {
-  arrangeValues,
   buildSortSteps,
   insertionSort,
-  orderLabel,
-  ORDER,
-  ORDER_OPTIONS,
   SIZE,
   type SortStep,
 } from '../src/algorithms/insertion-sort';

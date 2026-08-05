@@ -171,6 +171,52 @@
   --lift: 2.9rem;
   --socket: 2.4rem;
 
+  /* Merge sort lanes: unlit stock above, the merge lit as it is written. The
+     left run reads solid, the right one hollow — one accent, two fills. */
+  --mcol-bg: linear-gradient(
+    180deg,
+    rgba(232, 238, 246, 0.24),
+    rgba(232, 238, 246, 0.06) 62%,
+    rgba(232, 238, 246, 0.11)
+  );
+  --mcol-outline: none;
+  --mcol-shadow: inset 0 1px 0 rgba(232, 238, 246, 0.3);
+  --mcol-a-bg: linear-gradient(
+    180deg,
+    rgba(var(--accent-rgb), 0.62),
+    rgba(var(--accent-rgb), 0.16) 62%,
+    rgba(var(--accent-rgb), 0.26)
+  );
+  --mcol-a-shadow:
+    inset 0 1px 0 rgba(var(--accent-rgb), 0.75), 0 0 12px rgba(var(--accent-rgb), 0.18);
+  --mcol-b-bg: rgba(var(--accent-rgb), 0.05);
+  --mcol-b-outline: 1.5px solid rgba(var(--accent-rgb), 0.85);
+  --mcol-b-shadow: 0 0 10px rgba(var(--accent-rgb), 0.14);
+  /* Faded, but still obviously the colour of the run it came from — desaturating
+     it made a merged column read as untouched stock. */
+  --mcol-spent-opacity: 0.42;
+  --mcol-spent-filter: brightness(0.92);
+  --seam-mark-line: 1px dashed rgba(232, 238, 246, 0.3);
+  --lane-rule: var(--line-strong);
+  --cursor-a-ink: var(--accent-strong);
+  --cursor-b-ink: rgba(var(--accent-rgb), 0.85);
+  --cursor-w-ink: var(--accent-strong);
+  --cursor-glow-drop: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.65));
+  --chute-ink: rgba(var(--accent-rgb), 0.95);
+  --chute-width: 2px;
+  --chute-dash: none;
+  --chute-drop: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.7));
+  --wipe-bg: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-rgb), 0.28) 45%,
+    rgba(var(--accent-rgb), 0.5) 50%,
+    rgba(var(--accent-rgb), 0.28) 55%,
+    transparent
+  );
+  --lane-h: clamp(84px, 12.5vh, 118px);
+  --gap-h: 2.6rem;
+
   /* Motion personality: springy. */
   --ease-move: cubic-bezier(0.3, 1.45, 0.5, 1);
   --dur-move: 300ms;
@@ -322,6 +368,43 @@
   --lift: 2.9rem;
   --socket: 2.4rem;
 
+  /* Merge sort lanes: graphite stock, the merge inked in. The left run is
+     filled hatching, the right one an empty outline. */
+  --mcol-bg: repeating-linear-gradient(-48deg, rgba(34, 48, 77, 0.28) 0 1px, transparent 1px 3.5px);
+  --mcol-outline: 1px solid rgba(34, 48, 77, 0.42);
+  --mcol-shadow: none;
+  --mcol-a-bg: repeating-linear-gradient(
+    -48deg,
+    rgba(var(--accent-rgb), 0.75) 0 1.5px,
+    transparent 1.5px 3.5px
+  );
+  --mcol-a-shadow: none;
+  --mcol-b-bg: transparent;
+  --mcol-b-outline: 1.5px solid var(--accent-strong);
+  --mcol-b-shadow: none;
+  --mcol-spent-opacity: 0.36;
+  --mcol-spent-filter: none;
+  --seam-mark-line: 1px dashed rgba(34, 48, 77, 0.45);
+  --lane-rule: var(--line-strong);
+  --cursor-a-ink: var(--accent-strong);
+  --cursor-b-ink: var(--accent-strong);
+  --cursor-w-ink: var(--pencil);
+  --cursor-glow-drop: none;
+  --chute-ink: var(--pencil);
+  --chute-width: 1.6px;
+  --chute-dash: none;
+  --chute-drop: none;
+  --wipe-bg: linear-gradient(
+    90deg,
+    transparent,
+    rgba(214, 74, 59, 0.18) 44%,
+    rgba(214, 74, 59, 0.5) 50%,
+    rgba(214, 74, 59, 0.18) 56%,
+    transparent
+  );
+  --lane-h: clamp(84px, 12.5vh, 118px);
+  --gap-h: 2.6rem;
+
   /* Motion personality: drafting table — quick, exact. */
   --ease-move: cubic-bezier(0.3, 1, 0.4, 1);
   --dur-move: 140ms;
@@ -367,6 +450,27 @@
   --accent-contrast: #fdf7fa;
   --accent-rgb: 163, 36, 111;
   --code-keyword: #a3246f;
+}
+
+/* Violet is the last seat that doesn't collide with a mark colour, but it
+   lands on top of --code-function, so function names move to blue for this
+   algorithm — otherwise keywords and calls read as the same ink. */
+:root[data-theme='signal'][data-algo='merge-sort'] {
+  --accent: #b98cff;
+  --accent-strong: #d6bcff;
+  --accent-contrast: #1b0733;
+  --accent-rgb: 185, 140, 255;
+  --code-keyword: #bf97ff;
+  --code-function: #5cb3f5;
+}
+
+:root[data-theme='notebook'][data-algo='merge-sort'] {
+  --accent: #6a2ec9;
+  --accent-strong: #54219f;
+  --accent-contrast: #faf7ff;
+  --accent-rgb: 106, 46, 201;
+  --code-keyword: #6a2ec9;
+  --code-function: #2b4fa8;
 }
 
 * {
@@ -1747,6 +1851,314 @@ h1 {
   visibility: hidden;
 }
 
+/* ---------- Merge sort: two lanes ----------
+   Merge sort is the first algorithm here that can't work in place, so it gets
+   a second lane: the top one holds the input cut into sorted runs, the bottom
+   one is the auxiliary array being filled. The pair of runs in play is told
+   apart by fill — left solid, right hollow — and each value keeps that fill on
+   the way down, so the output reads as a zip of two sources. Cursors and the
+   chute live in the gap between the lanes. Everything is placed in percentages
+   of the lane, so a resize needs no work. */
+
+.merge {
+  position: relative;
+  margin-top: 1.25rem;
+}
+
+.lane-cap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-height: 1.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.merge > .lane-cap:first-child {
+  margin-bottom: 0.35rem;
+}
+
+.merge > .legend {
+  margin-top: 0.5rem;
+}
+
+.lane-cap .keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  visibility: hidden;
+}
+
+.legend.on .keys {
+  visibility: visible;
+}
+
+/* Once there is a single run left the two-run key has nothing to name. */
+.legend.done .keys {
+  visibility: hidden;
+}
+
+.sw {
+  display: inline-block;
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 2px;
+}
+
+.sw + .sw {
+  margin-left: 0.55rem;
+}
+
+.sw-a {
+  background: var(--accent);
+}
+
+.sw-b {
+  background: transparent;
+  border: 1.5px solid var(--accent);
+}
+
+.lanes {
+  position: relative;
+}
+
+.lane {
+  position: relative;
+  height: var(--lane-h);
+  transition: height var(--dur-move) var(--ease-move);
+}
+
+.lane::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--lane-rule);
+}
+
+.gap {
+  position: relative;
+  height: var(--gap-h);
+  transition: height var(--dur-move) var(--ease-move);
+}
+
+/* Before the first level and after the last there is no output to show, so
+   the second lane folds away and the array takes the whole stage. Column
+   heights are percentages of the lane, so they follow it without their own
+   transition — and the total height never changes, so nothing below moves. */
+.merge.solo .lane-src {
+  height: calc(2 * var(--lane-h) + var(--gap-h));
+}
+
+.merge.solo .gap,
+.merge.solo .lane-out {
+  height: 0;
+  overflow: hidden;
+}
+
+.merge.solo .lane-out::after,
+.merge.solo .cap-out {
+  visibility: hidden;
+}
+
+.mcol {
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+  width: calc(100% / var(--n, 10) - 4px);
+  height: calc(var(--h, 0) * 1%);
+  background: var(--mcol-bg);
+  border: var(--mcol-outline);
+  border-bottom: none;
+  border-radius: var(--col-radius);
+  box-shadow: var(--mcol-shadow);
+  transform-origin: bottom;
+}
+
+/* An output slot is nothing until it is written — no stub, no placeholder. */
+.lane-out .mcol:not(.filled) {
+  visibility: hidden;
+}
+
+/* The left run is solid, the right one hollow: one accent, two fills, legible
+   at twenty columns wide and in both themes. */
+.mcol.run-a,
+.mcol.from-a,
+.mcol.sorted {
+  background: var(--mcol-a-bg);
+  box-shadow: var(--mcol-a-shadow);
+}
+
+.mcol.run-b,
+.mcol.from-b {
+  background: var(--mcol-b-bg);
+  border: var(--mcol-b-outline);
+  border-bottom: none;
+  box-shadow: var(--mcol-b-shadow);
+}
+
+/* Already merged down — dimmed, but still wearing the run it came from. */
+.mcol.spent {
+  opacity: var(--mcol-spent-opacity);
+  filter: var(--mcol-spent-filter);
+}
+
+.mcol.rising {
+  animation: bar-rise var(--dur-pop) var(--ease-pop) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+/* A value dropping into the output lane starts exactly where it stood in the
+   lane above, so the chute and the drop describe the same move. */
+.mcol.landing {
+  animation: mcol-land var(--dur-pop) var(--ease-pop);
+}
+
+@keyframes mcol-land {
+  from {
+    transform: translateY(calc(-1 * (var(--lane-h) + var(--gap-h))));
+    opacity: 0;
+  }
+}
+
+/* End of a level: the output rises into the top lane and becomes the input. */
+.mcol.settling {
+  animation: mcol-settle var(--dur-pop) var(--ease-pop) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+@keyframes mcol-settle {
+  from {
+    transform: translateY(calc(var(--lane-h) + var(--gap-h)));
+    opacity: 0;
+  }
+}
+
+.seams {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.seam-mark {
+  position: absolute;
+  top: 0;
+  bottom: -4px;
+  width: 0;
+  border-left: var(--seam-mark-line);
+}
+
+/* Two read cursors under the run heads, one write cursor over the slot being
+   filled. Filled diamond = left run, hollow = right, matching the columns. */
+.mcursor {
+  position: absolute;
+  z-index: 4;
+  width: 8px;
+  height: 8px;
+  filter: var(--cursor-glow-drop);
+  transition: left var(--dur-move) var(--ease-move);
+}
+
+.mcursor.up {
+  top: 5px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.cur-a {
+  background: var(--cursor-a-ink);
+}
+
+.cur-b {
+  background: transparent;
+  border: 1.5px solid var(--cursor-b-ink);
+}
+
+/* The write cursor points at where the next value lands, so it stays an arrow. */
+.mcursor.down {
+  bottom: 4px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--cursor-w-ink);
+  transform: translateX(-50%);
+}
+
+.chute {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Rest state is opacity 0, not a hidden dash: a squeezed viewBox leaks
+   hairline fragments of a dash-hidden path (same trap as the search view). */
+.chute path {
+  fill: none;
+  stroke: var(--chute-ink);
+  stroke-width: var(--chute-width);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  filter: var(--chute-drop);
+}
+
+.chute.on path {
+  animation: chute-draw var(--dur-strike) var(--ease-draw);
+}
+
+@keyframes chute-draw {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  55% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* One pass across both lanes when a level is handed on. */
+.wipe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 6;
+  width: 26%;
+  background: var(--wipe-bg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wipe.on {
+  animation: lane-wipe 640ms var(--ease-move);
+}
+
+@keyframes lane-wipe {
+  from {
+    transform: translateX(-110%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(420%);
+    opacity: 0;
+  }
+}
+
 /* ---------- Readout ---------- */
 
 .readout {
@@ -1863,6 +2275,11 @@ h1 {
   .key-tag {
     top: -3.4rem;
   }
+
+  .merge {
+    --lane-h: clamp(72px, 13.5vh, 104px);
+    --gap-h: 2.2rem;
+  }
 }
 
 @media (max-width: 560px) {
@@ -1902,7 +2319,11 @@ h1 {
   .guide,
   .band,
   .seam,
-  .key-tag {
+  .key-tag,
+  .mcol,
+  .mcursor,
+  .lane,
+  .gap {
     transition: none;
   }
 
@@ -1922,7 +2343,13 @@ h1 {
   .col,
   .col.placed,
   .col.shifting,
-  .col.shifting .col-arrow path {
+  .col.shifting .col-arrow path,
+  .mcol,
+  .mcol.rising,
+  .mcol.landing,
+  .mcol.settling,
+  .chute.on path,
+  .wipe.on {
     animation: none;
   }
 
