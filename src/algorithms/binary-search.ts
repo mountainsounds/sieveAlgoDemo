@@ -166,6 +166,89 @@ const jsListing = {
   },
 };
 
+const pyListing = {
+  language: 'python',
+  label: 'binary_search.py',
+  code: `def binary_search(a, target):
+    lo = 0
+    hi = len(a) - 1
+
+    while lo <= hi:
+        mid = (lo + hi) // 2
+
+        if a[mid] == target:
+            return mid
+        if a[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+
+    return -1`,
+  lineFor(step: SearchStep): number | null {
+    switch (step.kind) {
+      case 'init':
+        return 2;
+      case 'level-set':
+        return 3;
+      case 'probe':
+        return 6;
+      case 'compare':
+        return 8;
+      case 'discard':
+        return step.side === 'left' ? 11 : 13;
+      case 'found':
+        return 9;
+      case 'not-found':
+        return 15;
+    }
+  },
+};
+
+const javaListing = {
+  language: 'java',
+  label: 'BinarySearch.java',
+  // lo + (hi - lo) / 2 rather than (lo + hi) / 2: on a big enough array the
+  // sum overflows int and the midpoint goes negative. Java's fixed-width ints
+  // make that a real bug, so this is the shape Java ships it in.
+  code: `static int binarySearch(int[] a, int target) {
+  int lo = 0;
+  int hi = a.length - 1;
+
+  while (lo <= hi) {
+    int mid = lo + (hi - lo) / 2;
+
+    if (a[mid] == target) {
+      return mid;
+    }
+    if (a[mid] < target) {
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+
+  return -1;
+}`,
+  lineFor(step: SearchStep): number | null {
+    switch (step.kind) {
+      case 'init':
+        return 2;
+      case 'level-set':
+        return 3;
+      case 'probe':
+        return 6;
+      case 'compare':
+        return 8;
+      case 'discard':
+        return step.side === 'left' ? 12 : 14;
+      case 'found':
+        return 9;
+      case 'not-found':
+        return 18;
+    }
+  },
+};
+
 export const binarySearchAlgo: AlgorithmDef = defineAlgorithm<SearchStep>({
   id: 'binary-search',
   title: 'Binary Search',
@@ -246,5 +329,5 @@ export const binarySearchAlgo: AlgorithmDef = defineAlgorithm<SearchStep>({
         return null;
     }
   },
-  listings: [jsListing],
+  listings: [jsListing, pyListing, javaListing],
 });

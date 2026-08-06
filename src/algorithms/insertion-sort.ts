@@ -127,6 +127,79 @@ const jsListing = {
   },
 };
 
+const pyListing = {
+  language: 'python',
+  label: 'insertion_sort.py',
+  code: `def insertion_sort(a):
+    for i in range(1, len(a)):
+        key = a[i]
+        j = i - 1
+
+        while j >= 0 and a[j] > key:
+            a[j + 1] = a[j]
+            j -= 1
+
+        a[j + 1] = key
+    return a`,
+  lineFor(step: SortStep): number | null {
+    switch (step.kind) {
+      case 'init':
+        return 1;
+      case 'seed':
+        return 2;
+      case 'pick':
+        return 3;
+      case 'compare':
+      case 'wall':
+        return 6;
+      case 'shift':
+        return 7;
+      case 'place':
+        return 10;
+      case 'done':
+        return 11;
+    }
+  },
+};
+
+const javaListing = {
+  language: 'java',
+  label: 'InsertionSort.java',
+  code: `static int[] insertionSort(int[] a) {
+  for (int i = 1; i < a.length; i++) {
+    int key = a[i];
+    int j = i - 1;
+
+    while (j >= 0 && a[j] > key) {
+      a[j + 1] = a[j];
+      j--;
+    }
+
+    a[j + 1] = key;
+  }
+  return a;
+}`,
+  lineFor(step: SortStep): number | null {
+    switch (step.kind) {
+      case 'init':
+        return 1;
+      case 'seed':
+        return 2;
+      case 'pick':
+        return 3;
+      case 'compare':
+      case 'wall':
+        return 6;
+      case 'shift':
+        return 7;
+      case 'place':
+        return 11;
+      case 'done':
+        return 13;
+    }
+  },
+};
+
 export const insertionSortAlgo: AlgorithmDef = defineAlgorithm<SortStep>({
   id: 'insertion-sort',
   title: 'Insertion Sort',
@@ -212,5 +285,5 @@ export const insertionSortAlgo: AlgorithmDef = defineAlgorithm<SortStep>({
         return null;
     }
   },
-  listings: [jsListing],
+  listings: [jsListing, pyListing, javaListing],
 });

@@ -1,13 +1,20 @@
 import '@fontsource-variable/space-grotesk';
 import '@fontsource-variable/jetbrains-mono';
 import 'prismjs';
+// One grammar per language the code panel offers. A missing one is silent —
+// Prism.highlight is skipped and the listing renders as plain text — so
+// tests/code-panel.test.ts checks this list against the shipped listings.
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-java';
 import './styles.css';
 
 import type {
+  AlgorithmDef,
   AlgorithmView,
   ChoiceControl,
+  CodeListing,
   Control,
   ControlValues,
   NumberControl,
@@ -18,6 +25,7 @@ import { Player } from './engine/player';
 import { CodePanel } from './ui/code-panel';
 import { AlgoPicker } from './ui/picker';
 import { initTheme } from './theme';
+import { initLanguage, type LanguageName } from './language';
 
 function el<T extends HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -45,6 +53,19 @@ const refsNav = el<HTMLElement>('algoRefs');
 
 const codePanel = new CodePanel(el('codeBlock'), el('codeLabel'));
 const player = new Player();
+
+let language: LanguageName = initLanguage((next) => {
+  language = next;
+  codePanel.show(listingFor(entry.def));
+});
+
+/** The listing the panel shows: the chosen language, or the first one there is. */
+function listingFor(def: AlgorithmDef): CodeListing {
+  return (
+    def.listings.find((listing) => listing.language === language) ??
+    mustGet(def.listings[0], 'algorithm has no code listing')
+  );
+}
 
 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   speedSelect.value = '4';
@@ -189,7 +210,7 @@ function mount(next: AlgorithmEntry): void {
     refsNav.appendChild(link);
   }
   renderControls(def.controls);
-  codePanel.show(mustGet(def.listings[0], 'algorithm has no code listing'));
+  codePanel.show(listingFor(def));
   view = next.createView(stage);
   view.preview(previewValues());
   hideChip();
@@ -200,7 +221,7 @@ function unmount(): void {
   player.load([], () => 0);
   view?.destroy();
   view = null;
-  codePanel.setActiveLine(null);
+  codePanel.clear();
 }
 
 function switchTo(next: AlgorithmEntry, push: boolean): void {
@@ -278,7 +299,7 @@ stepBtn.addEventListener('click', () => {
 resetBtn.addEventListener('click', () => {
   player.load([], () => 0);
   view?.preview(previewValues());
-  codePanel.setActiveLine(null);
+  codePanel.clear();
   hideChip();
   status.textContent = entry.def.idleText;
 });

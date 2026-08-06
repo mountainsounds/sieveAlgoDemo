@@ -94,7 +94,27 @@
       <div class="layout">
         <section class="code-pane" aria-label="Code">
           <div class="panel code-panel">
-            <p class="panel-label" id="codeLabel">countPrimes.js</p>
+            <div class="code-head">
+              <p class="panel-label" id="codeLabel">countPrimes.js</p>
+              <!-- A view of the code, not an input to the run, so it sits with
+                   the listing rather than in the controls. main.ts ticks the
+                   stored choice on boot; JavaScript is the default. -->
+              <fieldset class="lang-switch">
+                <legend class="visually-hidden">Code language</legend>
+                <label class="switch-opt">
+                  <input type="radio" name="lang" value="javascript" aria-label="JavaScript" />
+                  <span>JS</span>
+                </label>
+                <label class="switch-opt">
+                  <input type="radio" name="lang" value="python" aria-label="Python" />
+                  <span>PY</span>
+                </label>
+                <label class="switch-opt">
+                  <input type="radio" name="lang" value="java" aria-label="Java" />
+                  <span>JAVA</span>
+                </label>
+              </fieldset>
+            </div>
             <pre class="code-pre"><code id="codeBlock"></code></pre>
           </div>
         </section>
