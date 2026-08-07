@@ -60,6 +60,11 @@ export function buildSteps(n: number): SieveStep[] {
   return steps;
 }
 
+/* Three listings of the same sieve. Each is written the way that language
+   writes it — Python counts with a while loop rather than a C-style for, Java
+   allocates a false-filled array and fills it — so each keeps its own step→line
+   map. tests/code-panel.test.ts pins every one of them to the line it names. */
+
 const jsListing = {
   language: 'javascript',
   label: 'countPrimes.js',
@@ -98,6 +103,91 @@ const jsListing = {
         return 15;
       case 'done':
         return 17;
+    }
+  },
+};
+
+const pyListing = {
+  language: 'python',
+  label: 'count_primes.py',
+  code: `def count_primes(n):
+    is_prime = [True] * n
+    is_prime[0] = is_prime[1] = False
+
+    i = 2
+    while i * i < n:
+        if is_prime[i]:
+            for j in range(i * i, n, i):
+                is_prime[j] = False
+        i += 1
+
+    count = 0
+    for i in range(2, n):
+        if is_prime[i]:
+            count += 1
+    return count`,
+  lineFor(step: SieveStep): number | null {
+    switch (step.kind) {
+      case 'init':
+        return 2;
+      case 'strike-units':
+        return 3;
+      case 'prime-found':
+      case 'composite-skip':
+        return 7;
+      case 'strike':
+        return 9;
+      case 'sweep-done':
+        return 12;
+      // Python splits the test from the tally, so a struck number stops at the
+      // test and only a prime reaches the increment.
+      case 'count-visit':
+        return step.prime ? 15 : 14;
+      case 'done':
+        return 16;
+    }
+  },
+};
+
+const javaListing = {
+  language: 'java',
+  label: 'CountPrimes.java',
+  code: `static int countPrimes(int n) {
+  boolean[] isPrime = new boolean[n];
+  Arrays.fill(isPrime, true);
+  isPrime[0] = isPrime[1] = false;
+
+  for (int i = 2; i * i < n; i++) {
+    if (isPrime[i]) {
+      for (int j = i * i; j < n; j += i) {
+        isPrime[j] = false;
+      }
+    }
+  }
+
+  int count = 0;
+  for (int i = 2; i < n; i++) {
+    if (isPrime[i]) count++;
+  }
+  return count;
+}`,
+  lineFor(step: SieveStep): number | null {
+    switch (step.kind) {
+      case 'init':
+        return 2;
+      case 'strike-units':
+        return 4;
+      case 'prime-found':
+      case 'composite-skip':
+        return 7;
+      case 'strike':
+        return 9;
+      case 'sweep-done':
+        return 14;
+      case 'count-visit':
+        return 16;
+      case 'done':
+        return 18;
     }
   },
 };
@@ -164,5 +254,5 @@ export const sieve: AlgorithmDef = defineAlgorithm<SieveStep>({
     if (step.kind === 'done') return { text: `${step.count} primes below ${step.n}`, final: true };
     return null;
   },
-  listings: [jsListing],
+  listings: [jsListing, pyListing, javaListing],
 });

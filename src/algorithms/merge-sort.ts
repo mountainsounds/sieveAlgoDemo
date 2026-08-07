@@ -239,6 +239,97 @@ const jsListing = {
   },
 };
 
+const pyListing = {
+  language: 'python',
+  label: 'merge_sort.py',
+  // No C-style for here: doubling the width is a while loop, and taking a head
+  // is two statements because Python has no i++. Both change the line map.
+  code: `def merge_sort(a):
+    out = a[:]
+    w = 1
+    while w < len(a):
+        for lo in range(0, len(a), 2 * w):
+            mid = min(lo + w, len(a))
+            hi = min(lo + 2 * w, len(a))
+            i, j = lo, mid
+
+            for k in range(lo, hi):
+                if i < mid and (j >= hi or a[i] <= a[j]):
+                    out[k] = a[i]
+                    i += 1
+                else:
+                    out[k] = a[j]
+                    j += 1
+        a = out[:]
+        w *= 2
+    return a`,
+  lineFor(step: MergeStep): number | null {
+    switch (step.kind) {
+      case 'init':
+        return 2;
+      case 'level':
+        return 4;
+      case 'runs':
+      case 'lone':
+        return 5;
+      case 'take':
+      case 'copy':
+        return step.side === 'a' ? 12 : 15;
+      case 'sweep':
+        return 17;
+      case 'done':
+        return 19;
+    }
+  },
+};
+
+const javaListing = {
+  language: 'java',
+  label: 'MergeSort.java',
+  // `boolean left = …` is two characters wider than the JS `const left = …`,
+  // which puts it past the width the panel can show. Braces instead, which is
+  // the house style in most Java anyway.
+  code: `static int[] mergeSort(int[] a) {
+  int n = a.length;
+  int[] out = new int[n];
+  for (int w = 1; w < n; w *= 2) {
+    for (int lo = 0; lo < n; lo += 2 * w) {
+      int mid = Math.min(lo + w, n);
+      int hi = Math.min(lo + 2 * w, n);
+      int i = lo, j = mid;
+
+      for (int k = lo; k < hi; k++) {
+        if (i < mid && (j >= hi || a[i] <= a[j])) {
+          out[k] = a[i++];
+        } else {
+          out[k] = a[j++];
+        }
+      }
+    }
+    a = out.clone();
+  }
+  return a;
+}`,
+  lineFor(step: MergeStep): number | null {
+    switch (step.kind) {
+      case 'init':
+        return 3;
+      case 'level':
+        return 4;
+      case 'runs':
+      case 'lone':
+        return 5;
+      case 'take':
+      case 'copy':
+        return step.side === 'a' ? 12 : 14;
+      case 'sweep':
+        return 18;
+      case 'done':
+        return 20;
+    }
+  },
+};
+
 export const mergeSortAlgo: AlgorithmDef = defineAlgorithm<MergeStep>({
   id: 'merge-sort',
   title: 'Merge Sort',
@@ -333,5 +424,5 @@ export const mergeSortAlgo: AlgorithmDef = defineAlgorithm<MergeStep>({
         return null;
     }
   },
-  listings: [jsListing],
+  listings: [jsListing, pyListing, javaListing],
 });

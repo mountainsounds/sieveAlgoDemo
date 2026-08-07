@@ -151,3 +151,57 @@ describe.each(PALETTES)('$algo · $theme accent', (palette) => {
     }
   });
 });
+
+/**
+ * The code panel now carries Python and Java as well, which emit token types
+ * JavaScript never did. They are all routed onto the three inks below, and
+ * --code-keyword (plus --code-function, for merge sort) is re-keyed per
+ * algorithm — so each ink has to be legible against all four accents, in both
+ * themes, not just the one it was picked for.
+ */
+describe('code panel inks', () => {
+  const ALGOS = ['sieve-of-eratosthenes', 'binary-search', 'insertion-sort', 'merge-sort'];
+  const INKS = ['--code-keyword', '--code-function', '--code-number'];
+
+  /** The block's declarations, or '' when the algorithm doesn't override. */
+  const block = (theme: string, algo?: string): string => {
+    const scope = algo === undefined ? '' : `\\[data-algo='${algo}'\\]`;
+    const found = css.match(
+      new RegExp(`:root\\[data-theme='${theme}'\\]${scope}\\s*\\{([^}]*)\\}`),
+    );
+    return found?.[1] ?? '';
+  };
+
+  /** What the panel actually paints: the algorithm's override, else the theme's. */
+  const ink = (theme: string, algo: string, name: string): string => {
+    const find = (body: string): string | undefined =>
+      body.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, 'i'))?.[1];
+    const value = find(block(theme, algo)) ?? find(block(theme));
+    if (value === undefined) throw new Error(`${theme}/${algo} has no ${name}`);
+    return value;
+  };
+
+  for (const theme of ['signal', 'notebook'] as const) {
+    const code = theme === 'signal' ? SIGNAL_CODE : NOTEBOOK_CODE;
+    // The bar for telling two inks apart is the pair the theme itself ships.
+    const spread = deltaE(
+      ink(theme, 'sieve-of-eratosthenes', '--code-keyword'),
+      ink(theme, 'sieve-of-eratosthenes', '--code-function'),
+    );
+
+    for (const algo of ALGOS) {
+      it(`stay readable in ${theme} on ${algo}`, () => {
+        for (const name of INKS) {
+          const value = ink(theme, algo, name);
+          expect(contrast(value, code), `${name} ${value} on ${theme}`).toBeGreaterThanOrEqual(4.5);
+        }
+        // Keywords and calls sit side by side on nearly every line, and
+        // --code-function now carries Python's built-ins and Java's types too.
+        expect(
+          deltaE(ink(theme, algo, '--code-keyword'), ink(theme, algo, '--code-function')),
+          `${theme}/${algo}: keyword and function ink are too close`,
+        ).toBeGreaterThanOrEqual(spread);
+      });
+    }
+  }
+});

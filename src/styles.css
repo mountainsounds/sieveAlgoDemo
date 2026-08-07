@@ -677,7 +677,8 @@ a:hover {
   opacity: 0.7;
 }
 
-.theme-switch {
+.theme-switch,
+.lang-switch {
   display: flex;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -830,15 +831,40 @@ h1 {
   overflow: hidden;
 }
 
-.code-panel .panel-label {
-  padding: 0.8rem 1.1rem;
+/* The file name and the language switch share one rule above the listing.
+   The switch is a view of the code, so it belongs to the code, not to the
+   controls that set up a run. */
+.code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.6rem 0.5rem 1.1rem;
   border-bottom: 1px solid var(--line);
+}
+
+.code-panel .panel-label {
   text-transform: none;
   letter-spacing: 0.04em;
+  /* The label swaps between .js / .py / .java; hold the row still. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [data-theme='notebook'] .code-panel .panel-label {
   color: var(--text-soft);
+}
+
+.lang-switch {
+  flex: none;
+}
+
+.lang-switch .switch-opt span {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  padding: 0.26rem 0.5rem;
 }
 
 .code-pre {
@@ -877,6 +903,16 @@ h1 {
 }
 
 .token.function {
+  color: var(--code-function);
+}
+
+/* Python's built-ins (range, len, min) are calls, and Java's Math/Arrays —
+   like JavaScript's Array — are the library you call them on. Both take the
+   call ink, so a library name never outshines the array being sorted.
+   Parameters stay plain on purpose: `a` and `n` read as plain text
+   everywhere else in the listing, so the signature shouldn't differ. */
+.token.builtin,
+.token.class-name {
   color: var(--code-function);
 }
 
