@@ -76,6 +76,24 @@ const THEME_FN = { signal: '#9db8ff', notebook: '#6d3fae' };
 const PALETTES: Palette[] = [
   {
     theme: 'signal',
+    algo: 'quick-sort',
+    accent: '#ff9636',
+    strong: '#ffbe6b',
+    accentContrast: '#2a1200',
+    // Alone among the five, the keyword ink is the accent itself rather than a
+    // lightened version: lightening an orange lands on --code-number's amber.
+    keyword: '#ff9636',
+  },
+  {
+    theme: 'notebook',
+    algo: 'quick-sort',
+    accent: '#8a5a12',
+    strong: '#6b3e00',
+    accentContrast: '#fdf8ee',
+    keyword: '#8a5a12',
+  },
+  {
+    theme: 'signal',
     algo: 'merge-sort',
     accent: '#b98cff',
     strong: '#d6bcff',
@@ -96,14 +114,23 @@ const PALETTES: Palette[] = [
 
 /** Accents already in use — a new one has to be a different colour, not a shade. */
 const TAKEN = {
-  signal: { sieve: '#3fe0ff', 'binary-search': '#46f0a0', 'insertion-sort': '#ff7ad9' },
+  signal: {
+    sieve: '#3fe0ff',
+    'binary-search': '#46f0a0',
+    'insertion-sort': '#ff7ad9',
+    'merge-sort': '#b98cff',
+  },
   notebook: {
     sieve: '#2d55c8',
     'binary-search': '#1e7a4e',
     'insertion-sort': '#a3246f',
+    'merge-sort': '#6a2ec9',
     pencil: '#d64a3b',
   },
 };
+
+/** An accent is only compared against the ones that came before it. */
+const ORDERED = ['sieve', 'binary-search', 'insertion-sort', 'merge-sort', 'quick-sort'];
 
 describe.each(PALETTES)('$algo · $theme accent', (palette) => {
   const canvas = palette.theme === 'signal' ? SIGNAL_CANVAS : NOTEBOOK_CANVAS;
@@ -146,7 +173,12 @@ describe.each(PALETTES)('$algo · $theme accent', (palette) => {
   });
 
   it('is a different colour from every accent already in use', () => {
+    const mine = ORDERED.indexOf(palette.algo);
     for (const [algo, taken] of Object.entries(TAKEN[palette.theme])) {
+      // An accent clears the ones that came *before* it — never itself, and
+      // never a later one, or adding an algorithm would fail its predecessor.
+      const theirs = ORDERED.indexOf(algo);
+      if (theirs >= 0 && theirs >= mine) continue;
       expect(deltaE(palette.accent, taken), `too close to ${algo}`).toBeGreaterThan(25);
     }
   });
@@ -160,7 +192,13 @@ describe.each(PALETTES)('$algo · $theme accent', (palette) => {
  * themes, not just the one it was picked for.
  */
 describe('code panel inks', () => {
-  const ALGOS = ['sieve-of-eratosthenes', 'binary-search', 'insertion-sort', 'merge-sort'];
+  const ALGOS = [
+    'sieve-of-eratosthenes',
+    'binary-search',
+    'insertion-sort',
+    'merge-sort',
+    'quick-sort',
+  ];
   const INKS = ['--code-keyword', '--code-function', '--code-number'];
 
   /** The block's declarations, or '' when the algorithm doesn't override. */
@@ -204,4 +242,50 @@ describe('code panel inks', () => {
       });
     }
   }
+});
+
+/**
+ * A shadow list is all-or-nothing: `box-shadow: <shadow>, none` is invalid, and
+ * so is a list containing an undefined custom property — either way the whole
+ * declaration drops and the mark silently never renders. Both mistakes shipped
+ * here (an undefined token in one theme, and three tokens set to the keyword
+ * `none` while being used inside a list), and neither is visible to any
+ * assertion about behaviour, so they get pinned statically instead.
+ */
+describe('box-shadow lists', () => {
+  const THEMES = ['signal', 'notebook'] as const;
+
+  /** The declarations of one theme's root block. */
+  const themeBlock = (theme: string): string => {
+    const found = css.match(
+      new RegExp(`:root\\[data-theme='${theme}'\\]\\s*\\{([\\s\\S]*?)\\n\\}`),
+    );
+    return found?.[1] ?? '';
+  };
+
+  const lists = [...css.matchAll(/box-shadow:\s*([^;]*var\(--[^;]*);/g)]
+    .map((m) => (m[1] ?? '').trim())
+    .filter((value) => value.includes(','));
+
+  it('finds the shadow lists it is meant to be guarding', () => {
+    expect(lists.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it.each(THEMES)('resolves every token in every list, in %s', (theme) => {
+    const block = themeBlock(theme);
+    expect(block, `${theme} root block is missing`).not.toBe('');
+    for (const list of lists) {
+      for (const token of [...list.matchAll(/var\((--[\w-]+)\)/g)].map((m) => m[1] ?? '')) {
+        const declared = block.match(new RegExp(`\\s${token}:\\s*([^;]+);`));
+        expect(
+          declared,
+          `${theme}: ${token} is not defined, so "${list}" drops entirely`,
+        ).not.toBeNull();
+        expect(
+          (declared?.[1] ?? '').trim(),
+          `${theme}: ${token} is the keyword none, which is invalid inside "${list}"`,
+        ).not.toBe('none');
+      }
+    }
+  });
 });

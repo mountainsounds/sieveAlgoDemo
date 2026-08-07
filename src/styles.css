@@ -217,6 +217,32 @@
   --lane-h: clamp(84px, 12.5vh, 118px);
   --gap-h: 2.6rem;
 
+  /* Quicksort row: the resting column is insertion sort's — same deck, same
+     bar — so only what quicksort does differently gets its own token. */
+  --qlow-base: inset 0 -5px 0 rgba(var(--accent-rgb), 0.9);
+  --range-wash: linear-gradient(
+    180deg,
+    rgba(var(--accent-rgb), 0.11),
+    rgba(var(--accent-rgb), 0.02)
+  );
+  --range-edge: 1px solid rgba(var(--accent-rgb), 0.3);
+  --locked-cap: inset 0 3px 0 var(--accent-strong);
+  --rail-track: rgba(232, 238, 246, 0.07);
+  --frame-wait-tick: rgba(232, 238, 246, 0.38);
+  --frame-ink: var(--accent);
+  --frame-glow: 0 0 10px rgba(var(--accent-rgb), 0.45);
+  --frame-wait: rgba(232, 238, 246, 0.2);
+  --frame-wait-edge: none;
+  --bound-line: repeating-linear-gradient(
+    180deg,
+    rgba(var(--accent-rgb), 0.85) 0 5px,
+    transparent 5px 10px
+  );
+  --bound-glow: 0 0 8px rgba(var(--accent-rgb), 0.4);
+  --scan-ink: rgba(232, 238, 246, 0.5);
+  --scan-low-ink: var(--accent-strong);
+  --scan-glow: 0 0 9px rgba(var(--accent-rgb), 0.5);
+
   /* Motion personality: springy. */
   --ease-move: cubic-bezier(0.3, 1.45, 0.5, 1);
   --dur-move: 300ms;
@@ -336,13 +362,13 @@
   --col-bg: repeating-linear-gradient(-48deg, rgba(34, 48, 77, 0.3) 0 1px, transparent 1px 3.5px);
   --col-outline: 1px solid rgba(34, 48, 77, 0.45);
   --col-radius: 1px 1px 0 0;
-  --col-shadow: none;
+  --col-shadow: 0 0 transparent;
   --col-sorted-bg: repeating-linear-gradient(
     -48deg,
     rgba(var(--accent-rgb), 0.7) 0 1px,
     transparent 1px 3px
   );
-  --col-sorted-shadow: none;
+  --col-sorted-shadow: 0 0 transparent;
   --col-key-bg: repeating-linear-gradient(
     -48deg,
     rgba(var(--accent-rgb), 0.85) 0 1.5px,
@@ -351,7 +377,7 @@
   --col-key-shadow: 2px 4px 0 rgba(34, 48, 77, 0.2);
   --col-key-outline: 1.5px solid var(--accent-strong);
   --col-cmp-cap: inset 0 3px 0 var(--pencil);
-  --col-cmp-shadow: none;
+  --col-cmp-shadow: 0 0 transparent;
   --band-wash: linear-gradient(180deg, transparent 58%, rgba(var(--accent-rgb), 0.07));
   --band-rail-ink: rgba(var(--accent-rgb), 0.75);
   --band-rail-glow: none;
@@ -404,6 +430,24 @@
   );
   --lane-h: clamp(84px, 12.5vh, 118px);
   --gap-h: 2.6rem;
+
+  /* Quicksort row: graphite columns, the low side hatched in, the boundary a
+     pencil rule and the scanner a pencil caret. */
+  --qlow-base: inset 0 -5px 0 var(--accent);
+  --rail-track: rgba(34, 48, 77, 0.09);
+  --frame-wait-tick: rgba(34, 48, 77, 0.5);
+  --range-wash: linear-gradient(180deg, rgba(var(--accent-rgb), 0.07), transparent 72%);
+  --range-edge: 1px dashed rgba(34, 48, 77, 0.34);
+  --locked-cap: inset 0 3px 0 var(--accent-strong);
+  --frame-ink: var(--accent);
+  --frame-glow: none;
+  --frame-wait: transparent;
+  --frame-wait-edge: 1px dashed rgba(34, 48, 77, 0.5);
+  --bound-line: repeating-linear-gradient(180deg, var(--pencil) 0 6px, transparent 6px 11px);
+  --bound-glow: none;
+  --scan-ink: rgba(34, 48, 77, 0.6);
+  --scan-low-ink: var(--pencil);
+  --scan-glow: none;
 
   /* Motion personality: drafting table — quick, exact. */
   --ease-move: cubic-bezier(0.3, 1, 0.4, 1);
@@ -471,6 +515,27 @@
   --accent-rgb: 106, 46, 201;
   --code-keyword: #6a2ec9;
   --code-function: #2b4fa8;
+}
+
+/* Orange is the last clear seat: cyan, green, magenta and violet are taken,
+   and in Notebook the red pencil rules out anything nearer to it than bronze.
+   Unlike the other four this one does NOT lighten the accent for keywords —
+   a lighter orange lands on --code-number's amber (deltaE 23), so the keyword
+   ink is the accent itself. */
+:root[data-theme='signal'][data-algo='quick-sort'] {
+  --accent: #ff9636;
+  --accent-strong: #ffbe6b;
+  --accent-contrast: #2a1200;
+  --accent-rgb: 255, 150, 54;
+  --code-keyword: #ff9636;
+}
+
+:root[data-theme='notebook'][data-algo='quick-sort'] {
+  --accent: #8a5a12;
+  --accent-strong: #6b3e00;
+  --accent-contrast: #fdf8ee;
+  --accent-rgb: 138, 90, 18;
+  --code-keyword: #8a5a12;
 }
 
 * {
@@ -2359,7 +2424,13 @@ h1 {
   .mcol,
   .mcursor,
   .lane,
-  .gap {
+  .gap,
+  .qcol,
+  .range,
+  .pivot-tag,
+  .bound,
+  .scanner,
+  .frame {
     transition: none;
   }
 
@@ -2385,11 +2456,228 @@ h1 {
   .mcol.landing,
   .mcol.settling,
   .chute.on path,
-  .wipe.on {
+  .wipe.on,
+  .qcol,
+  .qcol.swapping {
     animation: none;
   }
 
   [data-theme='signal'] .cursor-ring::before {
     animation: none;
   }
+}
+
+/* ---------- Quicksort: one row, a rail for the call stack ----------
+   Insertion sort grows a sorted prefix and merge sort sweeps whole levels, so
+   both have a boundary that only moves one way. Quicksort jumps around the row
+   and finishes a *scatter* of single values, so it needs its own marks: a wash
+   over the slice being partitioned, a tagged pivot that turns locked where it
+   lands, two cursors under the baseline, and a rail below that draws the whole
+   call stack — the current frame solid, everything still queued hollow. Those
+   ranges never overlap, so the stack fits on one line with no nesting.
+   Everything is placed in percentages of the row, so a resize needs no work. */
+
+.quick {
+  position: relative;
+  margin-top: 1.25rem;
+}
+
+.qdeck {
+  /* Headroom for the pivot tag. */
+  padding-top: 3.1rem;
+}
+
+/* Room under the baseline for the boundary rule and the scanner. */
+.quick .row {
+  margin-bottom: 1.6rem;
+}
+
+.qcol {
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+  width: calc(100% / var(--n, 12) - 4px);
+  height: calc(var(--h, 0) * 1%);
+  background: var(--col-bg);
+  border: var(--col-outline);
+  border-bottom: none;
+  border-radius: var(--col-radius);
+  box-shadow: var(--col-shadow);
+  transform-origin: bottom;
+  animation: bar-rise var(--dur-pop) var(--ease-pop) both;
+  animation-delay: var(--rise-delay, 0ms);
+  transition:
+    left var(--dur-move) var(--ease-move),
+    box-shadow 0.2s ease;
+}
+
+/* Provisionally below the pivot. The body stays unlit and only the base is
+   marked: a value on the low side is tagged, not finished, and a settled pivot
+   is the only thing on the row that earns a full fill. */
+.qcol.low {
+  box-shadow: var(--qlow-base), var(--col-shadow);
+}
+
+/* The value being measured against the pivot wears a cap. */
+.qcol.testing {
+  box-shadow: var(--col-cmp-cap), var(--col-cmp-shadow);
+}
+
+.qcol.pivot {
+  z-index: 4;
+  background: var(--col-key-bg);
+  border: var(--col-key-outline);
+  border-bottom: none;
+  box-shadow: var(--col-key-shadow);
+}
+
+/* A settled pivot never moves again, wherever it happens to have landed. The
+   cap is what picks it out of a row that is still mostly unsorted. */
+.qcol.locked {
+  background: var(--col-sorted-bg);
+  box-shadow: var(--locked-cap), var(--col-sorted-shadow);
+}
+
+/* At the end every value is settled, so the caps stop distinguishing anything
+   and the row calms down to a plain sorted deck. */
+.qcol.final {
+  background: var(--col-sorted-bg);
+  box-shadow: var(--col-sorted-shadow);
+}
+
+.qcol.swapping {
+  animation: shift-smear var(--dur-move) var(--ease-move);
+}
+
+/* The slice being partitioned. It jumps and shrinks rather than growing. */
+.range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  background: var(--range-wash);
+  border-left: var(--range-edge);
+  border-right: var(--range-edge);
+  transition:
+    left var(--dur-move) var(--ease-move),
+    width var(--dur-move) var(--ease-move),
+    opacity 0.2s ease;
+}
+
+/* The guard has just said this range is too small to partition. */
+.range.spent {
+  opacity: 0.35;
+}
+
+/* Sits just above the pivot column itself, not at the top of the row — the
+   pivot is often short, and a tag pinned to the ceiling reads as unattached.
+   The pivot is always the last value in its range, so near the right end the
+   tag has to hang off the column's left or it runs past the row. */
+.pivot-tag {
+  position: absolute;
+  bottom: calc(var(--h, 0) * 1% + 0.55rem);
+  left: var(--x, 0);
+  transform: translateX(var(--tag-shift, -50%)) rotate(var(--tag-tilt, 0deg));
+  z-index: 6;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  background: var(--tag-bg, transparent);
+  border: 1px solid var(--tag-border, transparent);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  transition: left var(--dur-move) var(--ease-move);
+}
+
+/* Everything left of this rule is already below the pivot. */
+.bound {
+  position: absolute;
+  top: 0;
+  bottom: -0.5rem;
+  z-index: 3;
+  width: 2px;
+  margin-left: -1px;
+  background-image: var(--bound-line);
+  box-shadow: var(--bound-glow);
+  transition: left var(--dur-move) var(--ease-move);
+}
+
+/* The scanner walks right through the range, one value at a time. */
+.scanner {
+  position: absolute;
+  bottom: -1.35rem;
+  z-index: 3;
+  width: 0;
+  height: 0;
+  margin-left: -6px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 8px solid var(--scan-ink);
+  transition:
+    left var(--dur-move) var(--ease-move),
+    border-bottom-color 0.18s ease;
+}
+
+/* It turns when the value under it belongs on the low side. */
+.scanner.low {
+  border-bottom-color: var(--scan-low-ink);
+  filter: drop-shadow(var(--scan-glow));
+}
+
+/* The call stack. Current frame solid, everything still queued hollow, both
+   sitting in a track that stands for the whole row — so one full-width bar at
+   depth 1 reads as "all of it" rather than as an underline. */
+.rail {
+  position: relative;
+  height: 7px;
+  margin-top: 1.5rem;
+}
+
+.rail::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: var(--rail-track);
+}
+
+.frame {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 2px;
+  transition:
+    left var(--dur-move) var(--ease-move),
+    width var(--dur-move) var(--ease-move);
+}
+
+.frame.current {
+  background: var(--frame-ink);
+  box-shadow: var(--frame-glow);
+}
+
+.frame.pending {
+  background: var(--frame-wait);
+  border: var(--frame-wait-edge);
+}
+
+/* A call waiting on an empty range spans no columns but still holds a place on
+   the stack. On an ordered row almost every waiting call is one of these,
+   which is the shape of the worst case: recurse n times, do nothing half of
+   those times. */
+.frame.empty {
+  width: 3px;
+  margin-left: -1.5px;
+  border: none;
+  border-radius: 999px;
+  background: var(--frame-wait-tick);
+}
+
+.frame.current.empty {
+  background: var(--frame-ink);
+}
+
+[data-theme='notebook'] .frame {
+  border-radius: 1px;
 }
