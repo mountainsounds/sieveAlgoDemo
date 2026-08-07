@@ -15,8 +15,8 @@ import { registry } from '../src/registry';
 import { resolveLanguage } from '../src/language';
 
 /**
- * Three languages × four algorithms is twelve step→line maps that have to stay
- * in sync with four step unions, and a wrong line number is invisible: the
+ * Three languages × five algorithms is fifteen step→line maps that have to stay
+ * in sync with five step unions, and a wrong line number is invisible: the
  * panel happily lights up whatever line it is told to.
  *
  * So every step kind names the line it belongs on in each language, and also
@@ -84,16 +84,37 @@ const ANCHORS: Record<string, Record<string, Anchor>> = {
     sweep: { at: /a = out/, lines: [15, 17, 18] },
     done: { at: /return a;?$/, lines: [17, 19, 20] },
   },
+  'quick-sort': {
+    init: { at: /^(function|def|static) /, lines: [1, 1, 1] },
+    'call:root': { at: /^(function|def|static) /, lines: [1, 1, 1] },
+    'call:left': { at: /quick_?sort\(a, lo, i - 1\)/i, lines: [16, 15, 20] },
+    'call:right': { at: /quick_?sort\(a, i \+ 1, hi\)/i, lines: [17, 16, 21] },
+    'guard:plain': { at: /if \(?lo >= hi\)?/, lines: [2, 2, 2] },
+    // Python is the one listing that splits the test from the return, so a
+    // range that stops here lands a line below the one that carries on.
+    'guard:trivial': { at: /return a;?$/, lines: [2, 3, 2] },
+    pivot: { at: /pivot = a\[hi\]/, lines: [4, 5, 4] },
+    scan: { at: /if \(?a\[j\] < pivot\)?/, lines: [8, 9, 8] },
+    // Three ways to swap two slots. Java spends three lines on it, so the one
+    // that gets the highlight is the write to a[i] — the same moment the other
+    // two do in one line.
+    swap: { at: /a\[i\].*a\[j\]/, lines: [9, 10, 10] },
+    settle: { at: /a\[i\].*a\[hi\]/, lines: [14, 13, 17] },
+    done: { at: /return a;?$/, lines: [18, 17, 22] },
+  },
 };
 
 /** Step kinds whose line depends on the step's own payload, not just its kind. */
 function variantOf(algo: string, step: unknown): string {
-  const s = step as { kind: string; side?: string; prime?: boolean };
+  const s = step as { kind: string; side?: string; prime?: boolean; trivial?: boolean };
   if (algo === 'binary-search' && s.kind === 'discard') return `discard:${s.side}`;
   if (algo === 'merge-sort' && (s.kind === 'take' || s.kind === 'copy'))
     return `${s.kind}:${s.side}`;
   if (algo === 'sieve-of-eratosthenes' && s.kind === 'count-visit')
     return `count-visit:${s.prime === true ? 'prime' : 'composite'}`;
+  if (algo === 'quick-sort' && s.kind === 'call') return `call:${s.side}`;
+  if (algo === 'quick-sort' && s.kind === 'guard')
+    return `guard:${s.trivial === true ? 'trivial' : 'plain'}`;
   return s.kind;
 }
 

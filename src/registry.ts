@@ -3,10 +3,12 @@ import { sieve } from './algorithms/sieve';
 import { binarySearchAlgo } from './algorithms/binary-search';
 import { insertionSortAlgo } from './algorithms/insertion-sort';
 import { mergeSortAlgo } from './algorithms/merge-sort';
+import { quickSortAlgo } from './algorithms/quick-sort';
 import { SieveView } from './ui/views/sieve-view';
 import { SearchView } from './ui/views/search-view';
 import { SortView } from './ui/views/sort-view';
 import { MergeView } from './ui/views/merge-view';
+import { QuickView } from './ui/views/quick-view';
 
 /** An algorithm plus the view that renders it. Order fixes the 01/02 numbering. */
 export interface AlgorithmEntry {
@@ -19,4 +21,5 @@ export const registry: readonly AlgorithmEntry[] = [
   { def: binarySearchAlgo, createView: (stage) => new SearchView(stage) },
   { def: insertionSortAlgo, createView: (stage) => new SortView(stage) },
   { def: mergeSortAlgo, createView: (stage) => new MergeView(stage) },
+  { def: quickSortAlgo, createView: (stage) => new QuickView(stage) },
 ];
