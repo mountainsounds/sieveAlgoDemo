@@ -43,14 +43,14 @@ const ANCHORS: Record<string, Record<string, Anchor>> = {
   'sieve-of-eratosthenes': {
     init: { at: /new Array\(n\)|\[True\] \* n|new boolean\[n\]/, lines: [2, 2, 2] },
     'strike-units': { at: /\[0\] =/, lines: [3, 3, 4] },
-    'prime-found': { at: /if \(?is_?prime\[i\]\)?\s*[{:]$/i, lines: [6, 7, 7] },
-    'composite-skip': { at: /if \(?is_?prime\[i\]\)?\s*[{:]$/i, lines: [6, 7, 7] },
-    strike: { at: /\[j\] = false/i, lines: [8, 9, 9] },
-    'sweep-done': { at: /count = 0/, lines: [13, 12, 14] },
-    // Python puts the tally on its own line, so only a prime gets that far.
-    'count-visit:prime': { at: /count(\+\+|\s\+= 1)/, lines: [15, 15, 16] },
-    'count-visit:composite': { at: /if \(?is_?prime\[i\]\)?/i, lines: [15, 14, 16] },
-    done: { at: /return count/, lines: [17, 16, 18] },
+    // Python puts the call on its own line, so only a prime gets that far.
+    'prime-found': { at: /strike_?multiples\(is_?prime, i\)/i, lines: [6, 8, 7] },
+    'composite-skip': { at: /if \(?is_?prime\[i\]\)?/i, lines: [6, 7, 7] },
+    strike: { at: /\[m\] = false/i, lines: [14, 16, 19] },
+    // JavaScript and Python count in one expression; Java loops.
+    'sweep-done': { at: /filter\(Boolean\)|count\(True\)|count = 0/, lines: [9, 11, 10] },
+    'count-visit': { at: /filter\(Boolean\)|count\(True\)|count\+\+/, lines: [9, 11, 12] },
+    done: { at: /filter\(Boolean\)|count\(True\)|return count/, lines: [9, 11, 14] },
   },
   'binary-search': {
     init: { at: /lo = 0/, lines: [2, 2, 2] },
@@ -65,53 +65,56 @@ const ANCHORS: Record<string, Record<string, Anchor>> = {
   'insertion-sort': {
     init: { at: /^(function|def|static) /, lines: [1, 1, 1] },
     seed: { at: /i = 1; i <|for i in range\(1/, lines: [2, 2, 2] },
-    pick: { at: /key = a\[i\]/, lines: [3, 3, 3] },
-    compare: { at: /while .*a\[j\] > key/, lines: [6, 6, 6] },
-    wall: { at: /while .*a\[j\] > key/, lines: [6, 6, 6] },
-    shift: { at: /a\[j \+ 1\] = a\[j\]/, lines: [7, 7, 7] },
-    place: { at: /a\[j \+ 1\] = key/, lines: [11, 10, 11] },
-    done: { at: /return a;?$/, lines: [13, 11, 13] },
+    pick: { at: /key = a\[i\]/, lines: [9, 8, 9] },
+    compare: { at: /while .*a\[gap - 1\] > key/, lines: [12, 11, 12] },
+    wall: { at: /while .*a\[gap - 1\] > key/, lines: [12, 11, 12] },
+    shift: { at: /a\[gap\] = a\[gap - 1\]/, lines: [13, 12, 13] },
+    place: { at: /a\[gap\] = key/, lines: [17, 15, 17] },
+    done: { at: /return a;?$/, lines: [5, 4, 5] },
   },
   'merge-sort': {
-    init: { at: /out = (a\.slice\(\)|a\[:\]|new int\[n\])/, lines: [2, 2, 3] },
-    level: { at: /w = 1; w <|while w < /, lines: [3, 4, 4] },
-    runs: { at: /lo = 0; lo <|for lo in range/, lines: [4, 5, 5] },
-    lone: { at: /lo = 0; lo <|for lo in range/, lines: [4, 5, 5] },
-    'take:a': { at: /out\[k\] = a\[i/, lines: [11, 12, 12] },
-    'take:b': { at: /out\[k\] = a\[j/, lines: [12, 15, 14] },
-    'copy:a': { at: /out\[k\] = a\[i/, lines: [11, 12, 12] },
-    'copy:b': { at: /out\[k\] = a\[j/, lines: [12, 15, 14] },
-    sweep: { at: /a = out/, lines: [15, 17, 18] },
-    done: { at: /return a;?$/, lines: [17, 19, 20] },
+    init: { at: /^(function|def|static) /, lines: [1, 1, 1] },
+    level: { at: /width = 1; width <|while width < /, lines: [2, 3, 2] },
+    runs: {
+      at: /merge\((left, right|a\[lo:mid\], a\[mid:hi\]|a, out, lo, width)\)/,
+      lines: [13, 14, 11],
+    },
+    lone: {
+      at: /merge\((left, right|a\[lo:mid\], a\[mid:hi\]|a, out, lo, width)\)/,
+      lines: [13, 14, 11],
+    },
+    'take:a': { at: /(push|append)\(left\[i|= a\[left\+\+\];$/, lines: [23, 23, 22] },
+    'take:b': { at: /(push|append)\(right\[j|= a\[right\+\+\];$/, lines: [24, 26, 24] },
+    // Java drains each run in its own loop; the other two append both
+    // leftovers in one expression.
+    'copy:a': { at: /left\.slice\(i\)|left\[i:\]|while \(left < mid\)/, lines: [26, 28, 27] },
+    'copy:b': { at: /right\.slice\(j\)|right\[j:\]|while \(right < hi\)/, lines: [26, 28, 28] },
+    sweep: { at: /a = merge_?runs\(a, width\)/i, lines: [3, 4, 3] },
+    done: { at: /return a;?$/, lines: [5, 6, 5] },
   },
   'quick-sort': {
     init: { at: /^(function|def|static) /, lines: [1, 1, 1] },
     'call:root': { at: /^(function|def|static) /, lines: [1, 1, 1] },
-    'call:left': { at: /quick_?sort\(a, lo, i - 1\)/i, lines: [16, 15, 20] },
-    'call:right': { at: /quick_?sort\(a, i \+ 1, hi\)/i, lines: [17, 16, 21] },
+    'call:left': { at: /quick_?sort\(a, lo, pivot_?index - 1\)/i, lines: [5, 6, 5] },
+    'call:right': { at: /quick_?sort\(a, pivot_?index \+ 1, hi\)/i, lines: [6, 7, 6] },
     'guard:plain': { at: /if \(?lo >= hi\)?/, lines: [2, 2, 2] },
     // Python is the one listing that splits the test from the return, so a
     // range that stops here lands a line below the one that carries on.
     'guard:trivial': { at: /return a;?$/, lines: [2, 3, 2] },
-    pivot: { at: /pivot = a\[hi\]/, lines: [4, 5, 4] },
-    scan: { at: /if \(?a\[j\] < pivot\)?/, lines: [8, 9, 8] },
-    // Three ways to swap two slots. Java spends three lines on it, so the one
-    // that gets the highlight is the write to a[i] — the same moment the other
-    // two do in one line.
-    swap: { at: /a\[i\].*a\[j\]/, lines: [9, 10, 10] },
-    settle: { at: /a\[i\].*a\[hi\]/, lines: [14, 13, 17] },
-    done: { at: /return a;?$/, lines: [18, 17, 22] },
+    pivot: { at: /pivot = a\[hi\]/, lines: [11, 12, 11] },
+    scan: { at: /if \(?a\[i\] < pivot\)?/, lines: [15, 16, 15] },
+    swap: { at: /swap\(a, i, boundary\)|a\[i\], a\[boundary\] =/, lines: [16, 17, 16] },
+    settle: { at: /swap\(a, boundary, hi\)|a\[boundary\], a\[hi\] =/, lines: [21, 20, 21] },
+    done: { at: /return a;?$/, lines: [7, 8, 7] },
   },
 };
 
 /** Step kinds whose line depends on the step's own payload, not just its kind. */
 function variantOf(algo: string, step: unknown): string {
-  const s = step as { kind: string; side?: string; prime?: boolean; trivial?: boolean };
+  const s = step as { kind: string; side?: string; trivial?: boolean };
   if (algo === 'binary-search' && s.kind === 'discard') return `discard:${s.side}`;
   if (algo === 'merge-sort' && (s.kind === 'take' || s.kind === 'copy'))
     return `${s.kind}:${s.side}`;
-  if (algo === 'sieve-of-eratosthenes' && s.kind === 'count-visit')
-    return `count-visit:${s.prime === true ? 'prime' : 'composite'}`;
   if (algo === 'quick-sort' && s.kind === 'call') return `call:${s.side}`;
   if (algo === 'quick-sort' && s.kind === 'guard')
     return `guard:${s.trivial === true ? 'trivial' : 'plain'}`;
