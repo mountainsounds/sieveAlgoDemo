@@ -60,10 +60,13 @@ export function buildSteps(n: number): SieveStep[] {
   return steps;
 }
 
-/* Three listings of the same sieve. Each is written the way that language
-   writes it — Python counts with a while loop rather than a C-style for, Java
-   allocates a false-filled array and fills it — so each keeps its own step→line
-   map. tests/code-panel.test.ts pins every one of them to the line it names. */
+/* Three listings of the same sieve. In each one the inner loop lives in a
+   strikeMultiples helper, so the main loop reads as one plain sentence. Each is
+   still written the way its language writes it. Python walks up to √n with a
+   while loop rather than a C-style for. JavaScript and Python count the
+   survivors in one expression, where Java loops. So each keeps its own
+   step→line map, and tests/code-panel.test.ts pins every one of them to the
+   line it names. */
 
 const jsListing = {
   language: 'javascript',
@@ -73,18 +76,16 @@ const jsListing = {
   isPrime[0] = isPrime[1] = false;
 
   for (let i = 2; i * i < n; i++) {
-    if (isPrime[i]) {
-      for (let j = i * i; j < n; j += i) {
-        isPrime[j] = false;
-      }
-    }
+    if (isPrime[i]) strikeMultiples(isPrime, i);
   }
 
-  let count = 0;
-  for (let i = 2; i < n; i++) {
-    if (isPrime[i]) count++;
+  return isPrime.filter(Boolean).length;
+}
+
+function strikeMultiples(isPrime, p) {
+  for (let m = p * p; m < isPrime.length; m += p) {
+    isPrime[m] = false;
   }
-  return count;
 }`,
   lineFor(step: SieveStep): number | null {
     switch (step.kind) {
@@ -96,13 +97,12 @@ const jsListing = {
       case 'composite-skip':
         return 6;
       case 'strike':
-        return 8;
+        return 14;
+      // The count is one expression, so the whole tally sits on its line.
       case 'sweep-done':
-        return 13;
       case 'count-visit':
-        return 15;
       case 'done':
-        return 17;
+        return 9;
     }
   },
 };
@@ -117,34 +117,33 @@ const pyListing = {
     i = 2
     while i * i < n:
         if is_prime[i]:
-            for j in range(i * i, n, i):
-                is_prime[j] = False
+            strike_multiples(is_prime, i)
         i += 1
 
-    count = 0
-    for i in range(2, n):
-        if is_prime[i]:
-            count += 1
-    return count`,
+    return is_prime.count(True)
+
+
+def strike_multiples(is_prime, p):
+    for m in range(p * p, len(is_prime), p):
+        is_prime[m] = False`,
   lineFor(step: SieveStep): number | null {
     switch (step.kind) {
       case 'init':
         return 2;
       case 'strike-units':
         return 3;
+      // Python puts the call on its own line under the test, so a prime goes
+      // one line further than a number that is already struck.
       case 'prime-found':
+        return 8;
       case 'composite-skip':
         return 7;
       case 'strike':
-        return 9;
-      case 'sweep-done':
-        return 12;
-      // Python splits the test from the tally, so a struck number stops at the
-      // test and only a prime reaches the increment.
-      case 'count-visit':
-        return step.prime ? 15 : 14;
-      case 'done':
         return 16;
+      case 'sweep-done':
+      case 'count-visit':
+      case 'done':
+        return 11;
     }
   },
 };
@@ -158,18 +157,20 @@ const javaListing = {
   isPrime[0] = isPrime[1] = false;
 
   for (int i = 2; i * i < n; i++) {
-    if (isPrime[i]) {
-      for (int j = i * i; j < n; j += i) {
-        isPrime[j] = false;
-      }
-    }
+    if (isPrime[i]) strikeMultiples(isPrime, i);
   }
 
   int count = 0;
-  for (int i = 2; i < n; i++) {
-    if (isPrime[i]) count++;
+  for (boolean prime : isPrime) {
+    if (prime) count++;
   }
   return count;
+}
+
+static void strikeMultiples(boolean[] isPrime, int p) {
+  for (int m = p * p; m < isPrime.length; m += p) {
+    isPrime[m] = false;
+  }
 }`,
   lineFor(step: SieveStep): number | null {
     switch (step.kind) {
@@ -181,13 +182,13 @@ const javaListing = {
       case 'composite-skip':
         return 7;
       case 'strike':
-        return 9;
+        return 19;
       case 'sweep-done':
-        return 14;
+        return 10;
       case 'count-visit':
-        return 16;
+        return 12;
       case 'done':
-        return 18;
+        return 14;
     }
   },
 };

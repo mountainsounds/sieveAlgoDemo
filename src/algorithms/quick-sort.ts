@@ -172,10 +172,13 @@ export function buildQuickSteps(input: readonly number[], arrangement: string): 
 
 const plural = (k: number, word: string): string => `${k} ${word}${k === 1 ? '' : 's'}`;
 
-/* All three listings recurse, and all three return `a` so the panel shows a
-   function you could actually call. Python's guard is two lines, so it is the
-   one language where a range that returns immediately lights a different line
-   from one that carries on. */
+/* All three listings split the recursion from the partition, and all three
+   return `a` so the panel shows a function you could actually call. The
+   partition calls its moving index `boundary`, the word the narration uses for
+   the edge of the low side. JavaScript and Java swap through a small helper.
+   Python's tuple swap is already short and plain, so it stays inline. Python's
+   guard is two lines, so it is the one language where a range that returns
+   immediately lights a different line from one that carries on. */
 
 const jsListing = {
   language: 'javascript',
@@ -183,40 +186,48 @@ const jsListing = {
   code: `function quickSort(a, lo, hi) {
   if (lo >= hi) return a;
 
-  const pivot = a[hi];
-  let i = lo;
+  const pivotIndex = partition(a, lo, hi);
+  quickSort(a, lo, pivotIndex - 1);
+  quickSort(a, pivotIndex + 1, hi);
+  return a;
+}
 
-  for (let j = lo; j < hi; j++) {
-    if (a[j] < pivot) {
-      [a[i], a[j]] = [a[j], a[i]];
-      i++;
+function partition(a, lo, hi) {
+  const pivot = a[hi];
+  let boundary = lo;
+
+  for (let i = lo; i < hi; i++) {
+    if (a[i] < pivot) {
+      swap(a, i, boundary);
+      boundary++;
     }
   }
 
-  [a[i], a[hi]] = [a[hi], a[i]];
+  swap(a, boundary, hi);
+  return boundary;
+}
 
-  quickSort(a, lo, i - 1);
-  quickSort(a, i + 1, hi);
-  return a;
+function swap(a, i, j) {
+  [a[i], a[j]] = [a[j], a[i]];
 }`,
   lineFor(step: QuickStep): number | null {
     switch (step.kind) {
       case 'init':
         return 1;
       case 'call':
-        return step.side === 'left' ? 16 : step.side === 'right' ? 17 : 1;
+        return step.side === 'left' ? 5 : step.side === 'right' ? 6 : 1;
       case 'guard':
         return 2;
       case 'pivot':
-        return 4;
+        return 11;
       case 'scan':
-        return 8;
+        return 15;
       case 'swap':
-        return 9;
+        return 16;
       case 'settle':
-        return 14;
+        return 21;
       case 'done':
-        return 18;
+        return 7;
     }
   },
 };
@@ -228,39 +239,43 @@ const pyListing = {
     if lo >= hi:
         return a
 
+    pivot_index = partition(a, lo, hi)
+    quick_sort(a, lo, pivot_index - 1)
+    quick_sort(a, pivot_index + 1, hi)
+    return a
+
+
+def partition(a, lo, hi):
     pivot = a[hi]
-    i = lo
+    boundary = lo
 
-    for j in range(lo, hi):
-        if a[j] < pivot:
-            a[i], a[j] = a[j], a[i]
-            i += 1
+    for i in range(lo, hi):
+        if a[i] < pivot:
+            a[i], a[boundary] = a[boundary], a[i]
+            boundary += 1
 
-    a[i], a[hi] = a[hi], a[i]
-
-    quick_sort(a, lo, i - 1)
-    quick_sort(a, i + 1, hi)
-    return a`,
+    a[boundary], a[hi] = a[hi], a[boundary]
+    return boundary`,
   lineFor(step: QuickStep): number | null {
     switch (step.kind) {
       case 'init':
         return 1;
       case 'call':
-        return step.side === 'left' ? 15 : step.side === 'right' ? 16 : 1;
+        return step.side === 'left' ? 6 : step.side === 'right' ? 7 : 1;
       // The only listing that splits the test from the return, so a range that
       // stops here lands a line lower than one that carries on.
       case 'guard':
         return step.trivial ? 3 : 2;
       case 'pivot':
-        return 5;
+        return 12;
       case 'scan':
-        return 9;
+        return 16;
       case 'swap':
-        return 10;
-      case 'settle':
-        return 13;
-      case 'done':
         return 17;
+      case 'settle':
+        return 20;
+      case 'done':
+        return 8;
     }
   },
 };
@@ -268,53 +283,53 @@ const pyListing = {
 const javaListing = {
   language: 'java',
   label: 'QuickSort.java',
-  // A swap gets three lines rather than three statements crammed onto one: it
-  // is how Java is actually written, and a crammed line is too wide to read on
-  // a phone without scrolling — which matters here, because the swap is a line
-  // the panel highlights. The inner `t` goes out of scope with the if-block,
-  // so the second one is a fresh declaration rather than a shadow.
   code: `static int[] quickSort(int[] a, int lo, int hi) {
   if (lo >= hi) return a;
 
-  int pivot = a[hi];
-  int i = lo;
+  int pivotIndex = partition(a, lo, hi);
+  quickSort(a, lo, pivotIndex - 1);
+  quickSort(a, pivotIndex + 1, hi);
+  return a;
+}
 
-  for (int j = lo; j < hi; j++) {
-    if (a[j] < pivot) {
-      int t = a[i];
-      a[i] = a[j];
-      a[j] = t;
-      i++;
+static int partition(int[] a, int lo, int hi) {
+  int pivot = a[hi];
+  int boundary = lo;
+
+  for (int i = lo; i < hi; i++) {
+    if (a[i] < pivot) {
+      swap(a, i, boundary);
+      boundary++;
     }
   }
 
-  int t = a[i];
-  a[i] = a[hi];
-  a[hi] = t;
+  swap(a, boundary, hi);
+  return boundary;
+}
 
-  quickSort(a, lo, i - 1);
-  quickSort(a, i + 1, hi);
-  return a;
+static void swap(int[] a, int i, int j) {
+  int temp = a[i];
+  a[i] = a[j];
+  a[j] = temp;
 }`,
   lineFor(step: QuickStep): number | null {
     switch (step.kind) {
       case 'init':
         return 1;
       case 'call':
-        return step.side === 'left' ? 20 : step.side === 'right' ? 21 : 1;
+        return step.side === 'left' ? 5 : step.side === 'right' ? 6 : 1;
       case 'guard':
         return 2;
       case 'pivot':
-        return 4;
+        return 11;
       case 'scan':
-        return 8;
-      // The middle line of the three: where a[i] takes the new value.
+        return 15;
       case 'swap':
-        return 10;
+        return 16;
       case 'settle':
-        return 17;
+        return 21;
       case 'done':
-        return 22;
+        return 7;
     }
   },
 };

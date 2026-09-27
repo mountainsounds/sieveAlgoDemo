@@ -194,47 +194,59 @@ const plural = (k: number, word: string): string => `${k} ${word}${k === 1 ? '' 
 
 const runName = (side: Side): string => (side === 'a' ? 'left' : 'right');
 
+/* Each listing splits the sort into three functions with one loop apiece.
+   mergeSort doubles the width, mergeRuns walks one level pair by pair, and
+   merge zips two sorted runs together. Every line stays within 58 characters,
+   the most the panel shows at desktop width without scrolling. */
+
 const jsListing = {
   language: 'javascript',
   label: 'mergeSort.js',
-  // Lines stay under ~58 characters: the code panel scrolls, but the line
-  // being highlighted is the one that must never need scrolling to read.
   code: `function mergeSort(a) {
-  const out = a.slice();
-  for (let w = 1; w < a.length; w *= 2) {
-    for (let lo = 0; lo < a.length; lo += 2 * w) {
-      const mid = Math.min(lo + w, a.length);
-      const hi = Math.min(lo + 2 * w, a.length);
-      let i = lo, j = mid;
-
-      for (let k = lo; k < hi; k++) {
-        const left = i < mid && (j >= hi || a[i] <= a[j]);
-        if (left) out[k] = a[i++];
-        else out[k] = a[j++];
-      }
-    }
-    a = out.slice();
+  for (let width = 1; width < a.length; width *= 2) {
+    a = mergeRuns(a, width);
   }
   return a;
+}
+
+function mergeRuns(a, width) {
+  const merged = [];
+  for (let lo = 0; lo < a.length; lo += 2 * width) {
+    const left = a.slice(lo, lo + width);
+    const right = a.slice(lo + width, lo + 2 * width);
+    merged.push(...merge(left, right));
+  }
+  return merged;
+}
+
+function merge(left, right) {
+  const merged = [];
+  let i = 0;
+  let j = 0;
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) merged.push(left[i++]);
+    else merged.push(right[j++]);
+  }
+  return merged.concat(left.slice(i), right.slice(j));
 }`,
   lineFor(step: MergeStep): number | null {
     switch (step.kind) {
       case 'init':
-        return 2;
+        return 1;
       case 'level':
-        return 3;
+        return 2;
       case 'runs':
       case 'lone':
-        return 4;
-      // The left run wins either on the `a[i] <= a[j]` test or by short-circuit
-      // once the right one is spent; the branch taken is what differs.
+        return 13;
       case 'take':
+        return step.side === 'a' ? 23 : 24;
+      // Whatever is left of either run goes on in one concat.
       case 'copy':
-        return step.side === 'a' ? 11 : 12;
+        return 26;
       case 'sweep':
-        return 15;
+        return 3;
       case 'done':
-        return 17;
+        return 5;
     }
   },
 };
@@ -242,43 +254,53 @@ const jsListing = {
 const pyListing = {
   language: 'python',
   label: 'merge_sort.py',
-  // No C-style for here: doubling the width is a while loop, and taking a head
-  // is two statements because Python has no i++. Both change the line map.
+  // Doubling the width is a while loop, and taking a head is two statements
+  // because Python has no i++. Both change the line map.
   code: `def merge_sort(a):
-    out = a[:]
-    w = 1
-    while w < len(a):
-        for lo in range(0, len(a), 2 * w):
-            mid = min(lo + w, len(a))
-            hi = min(lo + 2 * w, len(a))
-            i, j = lo, mid
+    width = 1
+    while width < len(a):
+        a = merge_runs(a, width)
+        width *= 2
+    return a
 
-            for k in range(lo, hi):
-                if i < mid and (j >= hi or a[i] <= a[j]):
-                    out[k] = a[i]
-                    i += 1
-                else:
-                    out[k] = a[j]
-                    j += 1
-        a = out[:]
-        w *= 2
-    return a`,
+
+def merge_runs(a, width):
+    merged = []
+    for lo in range(0, len(a), 2 * width):
+        mid = lo + width
+        hi = lo + 2 * width
+        merged += merge(a[lo:mid], a[mid:hi])
+    return merged
+
+
+def merge(left, right):
+    merged = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            merged.append(left[i])
+            i += 1
+        else:
+            merged.append(right[j])
+            j += 1
+    return merged + left[i:] + right[j:]`,
   lineFor(step: MergeStep): number | null {
     switch (step.kind) {
       case 'init':
-        return 2;
+        return 1;
       case 'level':
-        return 4;
+        return 3;
       case 'runs':
       case 'lone':
-        return 5;
+        return 14;
       case 'take':
+        return step.side === 'a' ? 23 : 26;
       case 'copy':
-        return step.side === 'a' ? 12 : 15;
+        return 28;
       case 'sweep':
-        return 17;
+        return 4;
       case 'done':
-        return 19;
+        return 6;
     }
   },
 };
@@ -286,46 +308,55 @@ const pyListing = {
 const javaListing = {
   language: 'java',
   label: 'MergeSort.java',
-  // `boolean left = …` is two characters wider than the JS `const left = …`,
-  // which puts it past the width the panel can show. Braces instead, which is
-  // the house style in most Java anyway.
+  // Java has no slices, and copyOfRange plus arraycopy would bury the merge,
+  // so Java merges by index into one output array per level. Draining the
+  // leftovers then takes a loop per run, which gives each run its own line.
   code: `static int[] mergeSort(int[] a) {
-  int n = a.length;
-  int[] out = new int[n];
-  for (int w = 1; w < n; w *= 2) {
-    for (int lo = 0; lo < n; lo += 2 * w) {
-      int mid = Math.min(lo + w, n);
-      int hi = Math.min(lo + 2 * w, n);
-      int i = lo, j = mid;
-
-      for (int k = lo; k < hi; k++) {
-        if (i < mid && (j >= hi || a[i] <= a[j])) {
-          out[k] = a[i++];
-        } else {
-          out[k] = a[j++];
-        }
-      }
-    }
-    a = out.clone();
+  for (int width = 1; width < a.length; width *= 2) {
+    a = mergeRuns(a, width);
   }
   return a;
+}
+
+static int[] mergeRuns(int[] a, int width) {
+  int[] out = new int[a.length];
+  for (int lo = 0; lo < a.length; lo += 2 * width) {
+    merge(a, out, lo, width);
+  }
+  return out;
+}
+
+static void merge(int[] a, int[] out, int lo, int width) {
+  int mid = Math.min(lo + width, a.length);
+  int hi = Math.min(lo + 2 * width, a.length);
+  int left = lo, right = mid, next = lo;
+  while (left < mid && right < hi) {
+    if (a[left] <= a[right]) {
+      out[next++] = a[left++];
+    } else {
+      out[next++] = a[right++];
+    }
+  }
+  while (left < mid) out[next++] = a[left++];
+  while (right < hi) out[next++] = a[right++];
 }`,
   lineFor(step: MergeStep): number | null {
     switch (step.kind) {
       case 'init':
-        return 3;
+        return 1;
       case 'level':
-        return 4;
+        return 2;
       case 'runs':
       case 'lone':
-        return 5;
+        return 11;
       case 'take':
+        return step.side === 'a' ? 22 : 24;
       case 'copy':
-        return step.side === 'a' ? 12 : 14;
+        return step.side === 'a' ? 27 : 28;
       case 'sweep':
-        return 18;
+        return 3;
       case 'done':
-        return 20;
+        return 5;
     }
   },
 };

@@ -89,22 +89,31 @@ export function buildSortSteps(input: readonly number[], arrangement: string): S
 
 const plural = (k: number, word: string): string => `${k} ${word}${k === 1 ? '' : 's'}`;
 
+/* The walk left lives in an `insert` helper, so the outer loop says what
+   insertion sort is: insert each value into the run before it. The helper
+   tracks the gap the key left behind, not the index of the value it compares.
+   That gap is what the picture shows and what the narration names. */
+
 const jsListing = {
   language: 'javascript',
   label: 'insertionSort.js',
   code: `function insertionSort(a) {
   for (let i = 1; i < a.length; i++) {
-    const key = a[i];
-    let j = i - 1;
-
-    while (j >= 0 && a[j] > key) {
-      a[j + 1] = a[j];
-      j--;
-    }
-
-    a[j + 1] = key;
+    insert(a, i);
   }
   return a;
+}
+
+function insert(a, i) {
+  const key = a[i];
+  let gap = i;
+
+  while (gap > 0 && a[gap - 1] > key) {
+    a[gap] = a[gap - 1];
+    gap--;
+  }
+
+  a[gap] = key;
 }`,
   lineFor(step: SortStep): number | null {
     switch (step.kind) {
@@ -113,16 +122,16 @@ const jsListing = {
       case 'seed':
         return 2;
       case 'pick':
-        return 3;
+        return 9;
       case 'compare':
       case 'wall':
-        return 6;
+        return 12;
       case 'shift':
-        return 7;
-      case 'place':
-        return 11;
-      case 'done':
         return 13;
+      case 'place':
+        return 17;
+      case 'done':
+        return 5;
     }
   },
 };
@@ -132,15 +141,19 @@ const pyListing = {
   label: 'insertion_sort.py',
   code: `def insertion_sort(a):
     for i in range(1, len(a)):
-        key = a[i]
-        j = i - 1
+        insert(a, i)
+    return a
 
-        while j >= 0 and a[j] > key:
-            a[j + 1] = a[j]
-            j -= 1
 
-        a[j + 1] = key
-    return a`,
+def insert(a, i):
+    key = a[i]
+    gap = i
+
+    while gap > 0 and a[gap - 1] > key:
+        a[gap] = a[gap - 1]
+        gap -= 1
+
+    a[gap] = key`,
   lineFor(step: SortStep): number | null {
     switch (step.kind) {
       case 'init':
@@ -148,16 +161,16 @@ const pyListing = {
       case 'seed':
         return 2;
       case 'pick':
-        return 3;
+        return 8;
       case 'compare':
       case 'wall':
-        return 6;
-      case 'shift':
-        return 7;
-      case 'place':
-        return 10;
-      case 'done':
         return 11;
+      case 'shift':
+        return 12;
+      case 'place':
+        return 15;
+      case 'done':
+        return 4;
     }
   },
 };
@@ -167,17 +180,21 @@ const javaListing = {
   label: 'InsertionSort.java',
   code: `static int[] insertionSort(int[] a) {
   for (int i = 1; i < a.length; i++) {
-    int key = a[i];
-    int j = i - 1;
-
-    while (j >= 0 && a[j] > key) {
-      a[j + 1] = a[j];
-      j--;
-    }
-
-    a[j + 1] = key;
+    insert(a, i);
   }
   return a;
+}
+
+static void insert(int[] a, int i) {
+  int key = a[i];
+  int gap = i;
+
+  while (gap > 0 && a[gap - 1] > key) {
+    a[gap] = a[gap - 1];
+    gap--;
+  }
+
+  a[gap] = key;
 }`,
   lineFor(step: SortStep): number | null {
     switch (step.kind) {
@@ -186,16 +203,16 @@ const javaListing = {
       case 'seed':
         return 2;
       case 'pick':
-        return 3;
+        return 9;
       case 'compare':
       case 'wall':
-        return 6;
+        return 12;
       case 'shift':
-        return 7;
-      case 'place':
-        return 11;
-      case 'done':
         return 13;
+      case 'place':
+        return 17;
+      case 'done':
+        return 5;
     }
   },
 };
