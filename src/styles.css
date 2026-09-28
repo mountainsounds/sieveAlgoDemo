@@ -891,7 +891,15 @@ h1 {
 
 /* ---------- Code panel ---------- */
 
+/* The listing sizes its type to the width the pane really has, not to the
+   viewport, so the pane is the container it measures. */
+.code-pane {
+  container-type: inline-size;
+}
+
 .code-panel {
+  /* The file name and the code share one left edge. */
+  --code-pad: 1.1rem;
   background: var(--surface-2);
   overflow: hidden;
 }
@@ -904,7 +912,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.5rem 0.6rem 0.5rem 1.1rem;
+  padding: 0.5rem 0.6rem 0.5rem var(--code-pad);
   border-bottom: 1px solid var(--line);
 }
 
@@ -932,21 +940,57 @@ h1 {
   padding: 0.26rem 0.5rem;
 }
 
+/* On a wide panel the listing sets at its full size. On a narrow one, a phone
+   above all, the type shrinks until a line of --code-cols characters fits,
+   but never below 11px. Most lines are shorter than that. The rest wrap. The
+   0.6 is the width of one monospace character in ems, the extra half column
+   is slack so a full row never rounds past the edge, and the 4px is the
+   panel's two borders plus the marker bar. */
 .code-pre {
+  --code-cols: 44;
   overflow-x: auto;
   padding: 0.9rem 0;
   font-family: var(--font-mono);
   font-size: 0.84rem;
+  font-size: clamp(
+    0.6875rem,
+    (100cqi - 2 * var(--code-pad) - 4px) / ((var(--code-cols) + 0.5) * 0.6),
+    0.84rem
+  );
   line-height: 1.65;
   tab-size: 2;
   color: var(--text);
 }
 
+/* A line too long for the panel wraps instead of running off the edge. The
+   code panel picks the breaks and sets each line's --indent and the listing's
+   --hang. A wrapped row starts --hang columns past its line's indentation, so
+   it reads as the rest of that line rather than a new one. pre-wrap is only
+   the fallback for the frame before a new width is measured. */
 .code-line {
   display: block;
-  padding-inline: 1.1rem;
-  white-space: pre;
+  padding-right: var(--code-pad);
+  padding-left: calc(var(--code-pad) + (var(--indent, 0) + var(--hang, 4)) * 1ch);
+  text-indent: calc((var(--indent, 0) + var(--hang, 4)) * -1ch);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   border-left: 2px solid transparent;
+}
+
+/* The rows of one wrapped line sit closer together than separate lines, so
+   they read as one line. The padding gives the difference back, so the first
+   row sits where the line would have. Only wrapped lines get this: Safari
+   rounds a line height to whole pixels but not padding, so putting it on every
+   line would shift every listing. */
+.code-line.wrapped {
+  padding-block: 0.1em;
+  line-height: 1.45;
+}
+
+/* Each wrapped row begins with a drawn line break. Generated content is never
+   copied, so copying a wrapped line gives back the line as written. */
+.code-wrap::before {
+  content: '\A';
 }
 
 .code-line.active {
